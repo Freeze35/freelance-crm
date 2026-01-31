@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ client.name }} — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">{{ client.name }}</h1>
+        <a href="{% url 'client_update' client.pk %}"
+           class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition">
+            Редактировать клиента
+        </a>
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-6 space-y-6">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-800">Контактная информация</h2>
+            <p class="mt-2"><strong>Email:</strong> {{ client.email|default:"—" }}</p>
+            <p><strong>Телефон:</strong> {{ client.phone|default:"—" }}</p>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold text-gray-800">Заметки</h2>
+            <p class="mt-2 whitespace-pre-wrap">{{ client.notes|default:"Нет заметок" }}</p>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold text-gray-800">Дата создания</h2>
+            <p class="mt-2">{{ client.created_at|date:"d.m.Y H:i" }}</p>
+        </div>
+    </div>
+
+    <div class="mt-8">
+        <a href="{% url 'client_list' %}"
+           class="text-indigo-600 hover:text-indigo-800">
+            ← Вернуться к списку клиентов
+        </a>
+    </div>
+</div>
+{% endblock %}

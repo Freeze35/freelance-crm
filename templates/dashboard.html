@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — Freelance CRM{% endblock %}
+
+{% block content %}
+
+{% url 'client_list' as client_list_url %}
+
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900">Freelance CRM</h1>
+    <p class="mt-4 text-lg text-gray-600">Твой личный инструмент для работы с клиентами и проектами</p>
+
+    <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <a href="{% url 'client_list' %}"
+           title="Открыть полный список клиентов"
+           class="block bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-200">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900">Клиенты</h3>
+                <p class="mt-1 text-3xl font-semibold text-indigo-600">{{ client_count }}</p>
+                <p class="text-sm text-gray-500">Всего клиентов</p>
+            </div>
+        </a>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900">Проекты</h3>
+                <p class="mt-1 text-3xl font-semibold text-blue-600">
+                    {{ project_in_progress }} / {{ project_done }}
+                </p>
+                <p class="text-sm text-gray-500">В работе / Завершено</p>
+            </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900">Задачи</h3>
+                <p class="mt-1 text-3xl font-semibold text-red-600">{{ overdue_tasks }}</p>
+                <p class="text-sm text-gray-500">Просрочено</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
