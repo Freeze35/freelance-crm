@@ -25,7 +25,7 @@
                 {{ form.name }}
             </div>
             {% if form.name.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.name.errors|join:" " }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ form.name.errors|join:" " }}</p>
             {% endif %}
         </div>
 
@@ -35,7 +35,7 @@
                 {{ form.email }}
             </div>
             {% if form.email.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.email.errors|join:" " }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ form.email.errors|join:" " }}</p>
             {% endif %}
         </div>
 
@@ -45,7 +45,7 @@
                 {{ form.phone }}
             </div>
             {% if form.phone.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.phone.errors|join:" " }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ form.phone.errors|join:" " }}</p>
             {% endif %}
         </div>
 
@@ -55,14 +55,14 @@
                 {{ form.notes }}
             </div>
             {% if form.notes.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.notes.errors|join:" " }}</p>
+            <p class="mt-1 text-sm text-red-600">{{ form.notes.errors|join:" " }}</p>
             {% endif %}
         </div>
 
         <!-- Блок кнопок — выровнен по горизонтали -->
         <div class="flex justify-between items-center mt-8">
             <a href="{% url 'client_detail' client.pk %}"
-               class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium">
+               class="inline-flex items-center gap-2 font-medium bg-blue-400 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
                 ← Назад к профилю
             </a>
 
