@@ -6,7 +6,7 @@
 <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Клиенты</h1>
-        <a href="{% url 'client_create' %}"
+        <a href="{% url 'clients:create' %}"
            class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
             + Добавить клиента
         </a>
@@ -27,7 +27,7 @@
                 {% for client in page_obj %}
                 <tr class="hover:bg-gray-50 cursor-pointer"
                     title="Открыть подробнее"
-                    onclick="window.location.href='{% url 'client_detail' client.pk %}'">
+                    onclick="window.location.href='{% url 'clients:detail' client.pk %}'">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {{ client.name }}
                     </td>
@@ -75,7 +75,7 @@
     {% else %}
     <div class="text-center py-12">
         <p class="text-lg text-gray-600">Клиентов пока нет. Добавьте первого!</p>
-        <a href="{% url 'client_create' %}" class="mt-4 inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+        <a href="{% url 'clients:create' %}" class="mt-4 inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
             + Добавить клиента
         </a>
     </div>
