@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }} — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">{{ project.name }}</h1>
+        <div class="flex gap-4">
+            <a href="{% url 'projects:update' project.pk %}"
+               class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition">
+                Редактировать
+            </a>
+            <form action="{% url 'projects:delete' project.pk %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" onclick="return confirm('Удалить проект «{{ project.name }}»?');"
+                        class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition">
+                    Удалить
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-6 space-y-6">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-800">Клиент</h2>
+            <p class="mt-2">{{ project.client }}</p>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold text-gray-800">Статус</h2>
+            <p class="mt-2">{{ project.get_status_display }}</p>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold text-gray-800">Бюджет</h2>
+            <p class="mt-2">{{ project.budget|default:"—" }}</p>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold text-gray-800">Дедлайн</h2>
+            <p class="mt-2">{{ project.deadline|date:"d.m.Y"|default:"—" }}</p>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold text-gray-800">Описание</h2>
+            <p class="mt-2 whitespace-pre-wrap">{{ project.description|default:"Нет описания" }}</p>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold text-gray-800">Создан</h2>
+            <p class="mt-2">{{ project.created_at|date:"d.m.Y H:i" }}</p>
+        </div>
+    </div>
+
+    <div class="mt-8">
+        <a href="{% url 'projects:list' %}" class="text-indigo-600 hover:text-indigo-800">
+            ← Вернуться к списку проектов
+        </a>
+    </div>
+</div>
+{% endblock %}
