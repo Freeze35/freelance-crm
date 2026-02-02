@@ -1,16 +1,23 @@
-from django.shortcuts import render, redirect
-from .forms import ClientForm
 from django.core.paginator import Paginator
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+from .forms import ClientForm
 from .models import Client
 
 def client_create(request):
     if request.method == 'POST':
-        # Phone and email validation
         form = ClientForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('dashboard') # или куда нужно
+            client = form.save()
+            messages.success(request, f'Клиент "{client.name}" успешно добавлен!')
+
+            if request.POST.get('action') == 'save_and_add':
+                # просто перезагружаем ту же страницу — форма будет пустая
+                return redirect('client_create')
+
+            return redirect('dashboard')  # или 'client_list'
+
     else:
         form = ClientForm()
 
@@ -19,8 +26,8 @@ def client_create(request):
 def client_list(request):
 
     clients = Client.objects.all().order_by('-created_at')
-    # Pagination: 8 clients per page
 
+    # Pagination: 8 clients per page
     paginator = Paginator(clients, 8)  # 8 элементов на страницу
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -48,3 +55,11 @@ def client_update(request, pk):
     else:
         form = ClientForm(instance=client)
     return render(request, 'clients/update.html', {'form': form, 'client': client})
+
+@require_POST
+def client_delete(request, pk):
+    client = get_object_or_404(Client, pk=pk)
+    client_name = client.name  # сохраняем имя для сообщения
+    client.delete()
+    messages.success(request, f'Клиент "{client_name}" успешно удалён.')
+    return redirect('client_list')

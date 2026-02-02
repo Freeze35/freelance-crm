@@ -1,11 +1,9 @@
 from django import forms
 from .models import Client
-
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = ['name', 'email', 'phone', 'notes']
-
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
         if not phone:
@@ -24,14 +22,11 @@ class ClientForm(forms.ModelForm):
         else:
             raise forms.ValidationError("Номер должен содержать 10 цифр после кода страны")
 
-        # Final length check - must be exactly 11 digits
         if len(digits) != 11:
             raise forms.ValidationError("Номер должен содержать ровно 10 цифр после +7")
 
-        formatted = f'+7{digits[1:]}'
-
-        # Checking uniqueness
-        if Client.objects.filter(phone=formatted).exclude(pk=self.instance.pk).exists():
+        # Uniqueness check (by numbers, without the "+" sign)
+        if Client.objects.filter(phone=digits).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError("Этот номер телефона уже используется")
 
-        return formatted
+        return digits

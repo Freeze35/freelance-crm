@@ -4,7 +4,7 @@ from django.db import models
 class Client(models.Model):
     name = models.CharField(max_length=255, verbose_name="Имя / Компания")
     email = models.EmailField(blank=True, verbose_name="Email")
-    phone = models.CharField(max_length=50,blank=True,verbose_name="Телефон")
+    phone = models.CharField(max_length=20,blank=True,verbose_name="Телефон")
     notes = models.TextField(blank=True,verbose_name="Заметки")
     created_at = models.DateTimeField(auto_now_add=True,verbose_name="Создан")
 
@@ -15,3 +15,9 @@ class Client(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def formatted_phone(self):
+        if self.phone and len(self.phone) == 11:
+            return f'+7 {self.phone[1:4]} {self.phone[4:7]} {self.phone[7:]}'
+        return self.phone or '—'

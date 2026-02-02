@@ -3,6 +3,16 @@
 {% block title %}Редактировать {{ client.name }} — Freelance CRM{% endblock %}
 
 {% block content %}
+
+<!--Height limit for fillable fields-->
+<style>
+    textarea {
+        resize: vertical;
+        max-height: 200px;
+        min-height: 100px;
+    }
+</style>
+
 <div class="max-w-2xl mx-auto py-8">
     <h1 class="text-2xl font-bold mb-6">Редактировать клиента: {{ client.name }}</h1>
 
@@ -49,9 +59,10 @@
             {% endif %}
         </div>
 
+        <!-- Блок кнопок — выровнен по горизонтали -->
         <div class="flex justify-between items-center mt-8">
             <a href="{% url 'client_detail' client.pk %}"
-               class="bg-gray-300 text-gray-800 px-6 py-2 rounded hover:bg-gray-400 transition">
+               class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium">
                 ← Назад к профилю
             </a>
 

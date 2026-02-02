@@ -3,14 +3,26 @@
 {% block title %}{{ client.name }} — Freelance CRM{% endblock %}
 
 {% block content %}
+
 <div class="max-w-4xl mx-auto py-8">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">{{ client.name }}</h1>
+    <h1 class="text-3xl font-bold text-gray-900">{{ client.name }}</h1>
+    <div class="flex gap-4">
         <a href="{% url 'client_update' client.pk %}"
            class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition">
-            Редактировать клиента
+            Редактировать
         </a>
+
+        <form action="{% url 'client_delete' client.pk %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit"
+                    onclick="return confirm('Вы уверены, что хотите удалить клиента «{{ client.name }}»? Это действие нельзя отменить.');"
+                    class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition">
+                Удалить
+            </button>
+        </form>
     </div>
+</div>
 
     <div class="bg-white shadow rounded-lg p-6 space-y-6">
         <div>
@@ -32,7 +44,7 @@
 
     <div class="mt-8">
         <a href="{% url 'client_list' %}"
-           class="text-indigo-600 hover:text-indigo-800">
+           class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium">
             ← Вернуться к списку клиентов
         </a>
     </div>
