@@ -13,7 +13,7 @@ def project_list(request):
 
     context = {
         'page_obj': page_obj,
-        'projects': page_obj,  # ← исправлено: projects, а не clients
+        'projects': page_obj,
     }
     return render(request, 'projects/list.html', context)
 
@@ -24,7 +24,6 @@ def project_create(request):
             project = form.save()
             messages.success(request, f'Проект "{project.name}" успешно создан!')
             return redirect('projects:list')
-        # если форма невалидна — показываем ошибки
     else:
         form = ProjectForm()
 
@@ -42,7 +41,6 @@ def project_update(request, pk):
             form.save()
             messages.success(request, f'Проект "{project.name}" успешно обновлён!')
             return redirect('projects:detail', pk=project.pk)
-        # если невалидна — показываем ошибки
     else:
         form = ProjectForm(instance=project)
 

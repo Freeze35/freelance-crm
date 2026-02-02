@@ -13,7 +13,6 @@ def client_create(request):
             messages.success(request, f'Клиент "{client.name}" успешно добавлен!')
 
             if request.POST.get('action') == 'save_and_add':
-                # просто перезагружаем ту же страницу — форма будет пустая
                 return redirect('client_create')
 
             return redirect('dashboard')  # или 'client_list'
