@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактировать задачу: {{ task.title }} — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="space-y-8">
+        <!-- Верхний ряд: два блока в строку -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Левый блок: фиксированная информация -->
+            <div class="bg-white shadow rounded-lg p-6 space-y-6 min-h-[400px] flex flex-col">
+                <h1 class="text-2xl font-bold text-gray-900">{{ task.title }}</h1>
+
+                <dl class="space-y-4 text-sm flex-grow">
+                    <div>
+                        <dt class="font-medium text-gray-600">Проект</dt>
+                        <dd class="mt-1">
+                            <a href="{% url 'projects:detail' task.project.pk %}"
+                               class="text-indigo-600 hover:text-indigo-800 hover:underline">
+                                {{ task.project }}
+                            </a>
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt class="font-medium text-gray-600">Создана</dt>
+                        <dd class="mt-1">{{ task.created_at|date:"d.m.Y H:i" }}</dd>
+                    </div>
+
+                    <div>
+                        <dt class="font-medium text-gray-600">Дедлайн</dt>
+                        <dd class="mt-1">{{ task.deadline|date:"d.m.Y"|default:"—" }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Правый блок: статус сверху + описание на всю высоту -->
+            <div class="bg-white shadow rounded-lg p-6 flex flex-col space-y-6 min-h-[400px]">
+                <!-- Статус — справа сверху -->
+                <div class="flex justify-end">
+                    <div class="inline-flex items-center gap-3">
+                        <label for="{{ form.status.id_for_label }}"
+                               class="text-sm font-medium text-gray-700">Статус:</label>
+                        {{ form.status }}
+                    </div>
+                </div>
+
+                <!-- Описание — занимает всю оставшуюся высоту -->
+                <div class="flex-grow">
+                    <label for="{{ form.description.id_for_label }}"
+                           class="block text-sm font-medium text-gray-700 mb-2">
+                        Описание задачи
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.description.errors|join:" " }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Нижний блок: кнопки (все равной высоты) -->
+        <div class="bg-white shadow rounded-lg p-6 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-gray-200">
+            <a href="{% url 'projects:detail' task.project.pk %}"
+               class="text-white bg-blue-400 hover:bg-blue-600 font-medium inline-flex items-center gap-2 order-2 sm:order-1 px-6 py-3 rounded-lg transition min-h-[48px] flex items-center justify-center">
+                ← Вернуться к проекту
+            </a>
+
+            <div class="flex flex-col sm:flex-row gap-4 order-1 sm:order-2 w-full sm:w-auto">
+                <button type="submit" form="task-form"
+                        class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition min-h-[48px] flex items-center justify-center w-full sm:w-auto">
+                    Сохранить
+                </button>
+
+                <form action="{% url 'tasks:delete' task.pk %}" method="post" style="display:inline; width: 100%;">
+                    {% csrf_token %}
+                    <button type="submit"
+                            onclick="return confirm('Вы уверены, что хотите удалить задачу «{{ task.title }}»? Это действие нельзя отменить.');"
+                            class="bg-red-500 text-white px-8 py-3 rounded-lg hover:bg-red-600 transition min-h-[48px] flex items-center justify-center w-full sm:w-auto">
+                        Удалить задачу
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Скрытая основная форма -->
+        <form id="task-form" method="post" style="display:none;">
+            {% csrf_token %}
+            <input type="hidden" name="title" value="{{ task.title }}">
+            <input type="hidden" name="project" value="{{ task.project.pk }}">
+        </form>
+    </div>
+</div>
+{% endblock %}
