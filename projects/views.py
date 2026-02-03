@@ -3,9 +3,16 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from .models import Project
 from .forms import ProjectForm
+from django.db.models import Count, Q
 
 def project_list(request):
-    projects = Project.objects.all().order_by('-created_at')
+    projects = Project.objects.all().order_by('-created_at').annotate(
+        todo_count=Count('tasks', filter=Q(tasks__status='todo')),
+        in_progress_count=Count('tasks', filter=Q(tasks__status='in_progress')),
+        done_count=Count('tasks', filter=Q(tasks__status='done')),
+        canceled_count=Count('tasks', filter=Q(tasks__status='canceled')),
+        total_tasks=Count('tasks'),
+    )
 
     paginator = Paginator(projects, 8)
     page_number = request.GET.get('page')

@@ -15,43 +15,83 @@
                 {% csrf_token %}
                 <button type="submit" onclick="return confirm('Удалить проект «{{ project.name }}»?');"
                         class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition">
-                    Удалить
+                    Удалить проект
                 </button>
             </form>
         </div>
     </div>
+    <div class="bg-white shadow rounded-lg p-6 space-y-8">
+        <!-- Верхняя часть: сетка из 3 колонок на десктопе -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Клиент</h3>
+                <p class="mt-1 text-base font-semibold text-gray-900">{{ project.client }}</p>
+            </div>
 
-    <div class="bg-white shadow rounded-lg p-6 space-y-6">
-        <div>
-            <h2 class="text-lg font-semibold text-gray-800">Клиент</h2>
-            <p class="mt-2">{{ project.client }}</p>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Статус</h3>
+                <p class="mt-1 text-base font-semibold text-gray-900">{{ project.get_status_display }}</p>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Бюджет</h3>
+                <p class="mt-1 text-base font-semibold text-gray-900">{{ project.budget|default:"—" }}</p>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Дедлайн</h3>
+                <p class="mt-1 text-base font-semibold text-gray-900">{{ project.deadline|date:"d.m.Y"|default:"—" }}</p>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Создан</h3>
+                <p class="mt-1 text-base font-semibold text-gray-900">{{ project.created_at|date:"d.m.Y H:i" }}</p>
+            </div>
         </div>
 
-        <div>
-            <h2 class="text-lg font-semibold text-gray-800">Статус</h2>
-            <p class="mt-2">{{ project.get_status_display }}</p>
-        </div>
-
-        <div>
-            <h2 class="text-lg font-semibold text-gray-800">Бюджет</h2>
-            <p class="mt-2">{{ project.budget|default:"—" }}</p>
-        </div>
-
-        <div>
-            <h2 class="text-lg font-semibold text-gray-800">Дедлайн</h2>
-            <p class="mt-2">{{ project.deadline|date:"d.m.Y"|default:"—" }}</p>
-        </div>
-
-        <div>
-            <h2 class="text-lg font-semibold text-gray-800">Описание</h2>
-            <p class="mt-2 whitespace-pre-wrap">{{ project.description|default:"Нет описания" }}</p>
-        </div>
-
-        <div>
-            <h2 class="text-lg font-semibold text-gray-800">Создан</h2>
-            <p class="mt-2">{{ project.created_at|date:"d.m.Y H:i" }}</p>
+        <div class="pt-6 border-t border-gray-200">
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Описание</h3>
+            <p class="whitespace-pre-wrap text-gray-800 leading-relaxed">
+                {{ project.description|default:"Нет описания" }}
+            </p>
         </div>
     </div>
+    <div class="mt-10">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-gray-900">Задачи проекта</h2>
+        <a href="{% url 'tasks:create' project.pk %}" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 text-sm font-medium">
+            + Добавить задачу
+        </a>
+    </div>
+
+    {% if project.tasks.exists %}
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Задача</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Дедлайн</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for task in project.tasks.all %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-sm font-medium">{{ task.title }}</td>
+                    <td class="px-6 py-4 text-sm">{{ task.get_status_display }}</td>
+                    <td class="px-6 py-4 text-sm">{{ task.deadline|date:"d.m.Y"|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-gray-600">
+        <p class="text-lg">Задач пока нет</p>
+        <p class="mt-2 text-sm">Добавьте первую задачу к проекту</p>
+    </div>
+    {% endif %}
+</div>
 
     <div class="mt-8">
         <a href="{% url 'projects:list' %}"
