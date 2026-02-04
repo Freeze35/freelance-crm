@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from .models import Project
 from .forms import ProjectForm
 from django.db.models import Count, Q
+from django.utils import timezone
 
 def project_list(request):
     projects = Project.objects.all().order_by('-created_at').annotate(
@@ -36,9 +37,25 @@ def project_create(request):
 
     return render(request, 'projects/create.html', {'form': form})
 
+
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
-    return render(request, 'projects/detail.html', {'project': project})
+
+    # Все задачи проекта
+    tasks = project.tasks.all().order_by('deadline')  # сортировка по дедлайну по умолчанию
+
+    # Пагинация: 8 задач на страницу
+    paginator = Paginator(tasks, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'project': project,
+        'page_obj': page_obj,  # передаём объект пагинации
+        'tasks': page_obj,  # для совместимости с циклом {% for task in tasks %}
+        'today': timezone.now().date(),
+    }
+    return render(request, 'projects/detail.html', context)
 
 def project_update(request, pk):
     project = get_object_or_404(Project, pk=pk)
