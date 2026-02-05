@@ -4,39 +4,31 @@
 
 {% block content %}
 <div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-    <div class="space-y-8">
-        <!-- Top row: two blocks in a row -->
+    <form method="post" id="task-form" class="space-y-8">
+        {% csrf_token %}
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Left block: fixed information -->
-            <div class="bg-white shadow rounded-lg p-6 space-y-6 min-h-[400px] flex flex-col">
-                <h1 class="text-2xl font-bold text-gray-900">{{ task.title }}</h1>
+            <div class="bg-white shadow rounded-lg p-6 space-y-6 min-h-[400px]">
+                <h1 class="text-2xl font-bold text-gray-900">Редактирование задачи</h1>
 
-                <dl class="space-y-4 text-sm flex-grow">
-                    <div>
-                        <dt class="font-medium text-gray-600">Проект</dt>
-                        <dd class="mt-1">
-                            <a href="{% url 'projects:detail' task.project.pk %}"
-                               class="text-indigo-600 hover:text-indigo-800 hover:underline">
-                                {{ task.project }}
-                            </a>
-                        </dd>
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Название задачи</label>
+                    <div class="mt-1">{{ form.title }}</div>
+                    {% if form.title.errors %}<p class="text-red-600">{{ form.title.errors|join:" " }}</p>{% endif %}
+                </div>
 
-                    <div>
-                        <dt class="font-medium text-gray-600">Создана</dt>
-                        <dd class="mt-1">{{ task.created_at|date:"d.m.Y H:i" }}</dd>
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Дедлайн</label>
+                    <div class="mt-1">{{ form.deadline }}</div>
+                </div>
 
-                    <div>
-                        <dt class="font-medium text-gray-600">Дедлайн</dt>
-                        <dd class="mt-1">{{ task.deadline|date:"d.m.Y"|default:"—" }}</dd>
-                    </div>
-                </dl>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Проект</label>
+                    <div class="mt-1">{{ form.project }}</div>
+                </div>
             </div>
 
-            <!-- Right block: top status + full height description -->
             <div class="bg-white shadow rounded-lg p-6 flex flex-col space-y-6 min-h-[400px]">
-                <!-- Status - Top Right -->
                 <div class="flex justify-end">
                     <div class="inline-flex items-center gap-3">
                         <label class="text-sm font-medium text-gray-700">Статус:</label>
@@ -44,50 +36,27 @@
                     </div>
                 </div>
 
-                <!-- Description — occupies the entire remaining height -->
                 <div class="flex-grow">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Описание задачи
-                    </label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Описание задачи</label>
                     {{ form.description }}
-                    {% if form.description.errors %}
-                    <p class="mt-2 text-sm text-red-600">{{ form.description.errors|join:" " }}</p>
-                    {% endif %}
                 </div>
             </div>
         </div>
+    </form> <div class="mt-8 bg-white shadow rounded-lg p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <a href="{% url 'projects:detail' task.project.pk %}" class="text-blue-600">
+            ← Вернуться к проекту
+        </a>
 
-        <!-- Bottom block: buttons (even height) -->
-        <div class="bg-white shadow rounded-lg p-6 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-gray-200">
-            <a href="{% url 'projects:detail' task.project.pk %}"
-               class="text-white bg-blue-400 hover:bg-blue-600 font-medium inline-flex items-center gap-2 order-2 sm:order-1 px-6 py-3 rounded-lg transition min-h-[48px] flex items-center justify-center">
-                ← Вернуться к проекту
-            </a>
+        <div class="flex gap-4">
+            <form action="{% url 'tasks:delete' task.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="bg-red-500 text-white px-6 py-2 rounded-lg">Удалить</button>
+            </form>
 
-            <div class="flex flex-col sm:flex-row gap-4 order-1 sm:order-2 w-full sm:w-auto">
-
-                <form action="{% url 'tasks:delete' task.pk %}" method="post" style="display:inline; width: 100%;">
-                    {% csrf_token %}
-                    <button type="submit"
-                            onclick="return confirm('Вы уверены, что хотите удалить задачу «{{ task.title }}»? Это действие нельзя отменить.');"
-                            class="bg-red-500 text-white px-8 py-3 rounded-lg hover:bg-red-600 transition min-h-[48px] flex items-center justify-center w-full sm:w-auto">
-                        Удалить задачу
-                    </button>
-                </form>
-
-                <button type="submit" form="task-form"
-                        class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition min-h-[48px] flex items-center justify-center w-full sm:w-auto">
-                    Сохранить
-                </button>
-            </div>
+            <button type="submit" form="task-form" class="bg-blue-600 text-white px-8 py-2 rounded-lg">
+                Сохранить
+            </button>
         </div>
-
-        <!-- Hidden main form -->
-        <form id="task-form" method="post" style="display:none;">
-            {% csrf_token %}
-            <input type="hidden" name="title" value="{{ task.title }}">
-            <input type="hidden" name="project" value="{{ task.project.pk }}">
-        </form>
     </div>
 </div>
 {% endblock %}
