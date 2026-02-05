@@ -30,32 +30,23 @@
                     <td colspan="6" class="p-0">
                         <a href="{% url 'projects:detail' project.pk %}" class="block h-full">
                             <div class="grid grid-cols-6 px-6 py-4 items-center">
-                                <!-- Название -->
                                 <div class="text-sm font-medium text-gray-900">
                                     {{ project.name }}
                                 </div>
-
-                                <!-- Клиент -->
                                 <div class="text-sm text-gray-500">
                                     {{ project.client }}
                                 </div>
-
-                                <!-- Статус проекта -->
                                 <div class="text-sm text-gray-500">
                                     {{ project.get_status_display }}
                                 </div>
-
-                                <!-- Дедлайн -->
                                 <div class="text-sm text-gray-500">
                                     {{ project.deadline|date:"d.m.Y"|default:"—" }}
                                 </div>
-
-                                <!-- Бюджет -->
                                 <div class="text-sm text-gray-500">
                                     {{ project.budget|default:"—" }}
                                 </div>
 
-                                <!-- Задачи с иконками и количеством по статусам -->
+                                <!-- Tasks with icons and quantity by status -->
                                 <div class="text-sm flex items-center gap-3 flex-wrap">
                                     {% if project.todo_count > 0 %}
                                         <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
