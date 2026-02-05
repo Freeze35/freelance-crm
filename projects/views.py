@@ -5,6 +5,7 @@ from .models import Project
 from .forms import ProjectForm
 from django.db.models import Count, Q
 from django.utils import timezone
+from tasks.models import Task
 
 def project_list(request):
     projects = Project.objects.all().order_by('-created_at').annotate(
@@ -78,3 +79,23 @@ def project_delete(request, pk):
         messages.success(request, f'Проект "{project_name}" успешно удалён.')
         return redirect('projects:list')
     return render(request, 'projects/delete_confirm.html', {'project': project})
+
+
+def overdue_tasks(request):
+    today = timezone.now().date()
+
+    overdue = Task.objects.filter(
+        deadline__lt=today,
+        status__in=['todo', 'in_progress']
+    ).select_related('project').order_by('deadline')
+
+    paginator = Paginator(overdue, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'total_overdue': overdue.count(),
+        'today': today,
+    }
+    return render(request, 'projects/overdue.html', context)
