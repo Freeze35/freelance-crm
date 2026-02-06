@@ -10,7 +10,7 @@ class Project(models.Model):
     ]
 
     name = models.CharField(max_length=255, verbose_name="Название проекта")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, verbose_name="Клиент")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE,related_name='projects', verbose_name="Клиент")
     description = models.TextField(blank=True, verbose_name="Описание")
     budget = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Бюджет")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', verbose_name="Статус")
