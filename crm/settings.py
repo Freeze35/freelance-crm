@@ -138,3 +138,32 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Настройки Celery
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/Moscow' # Твой часовой пояс
+
+# Настройки планировщика (Beat)
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'send_notifications_9am': {
+        'task': 'tasks.tasks.send_telegram_notifications',
+        'schedule': crontab(hour=9, minute=0),
+    },
+    'send_notifications_6pm': {
+        'task': 'tasks.tasks.send_telegram_notifications',
+        'schedule': crontab(hour=18, minute=0),
+    },
+}
+
+import environ
+import os
+
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+TELEGRAM_BOT_TOKEN = env('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = env('TELEGRAM_CHAT_ID')

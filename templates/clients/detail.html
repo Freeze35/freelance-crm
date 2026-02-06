@@ -2,6 +2,18 @@
 
 {% block title %}{{ client.name }} — Freelance CRM{% endblock %}
 
+<script>
+function copyToClipboard(text, button) {
+    navigator.clipboard.writeText(text).then(() => {
+        const originalHtml = button.innerHTML;
+        button.innerHTML = '<span class="text-green-600 text-xs font-bold">Скопировано!</span>';
+        setTimeout(() => {
+            button.innerHTML = originalHtml;
+        }, 1500);
+    });
+}
+</script>
+
 {% block content %}
 <div class="max-w-4xl mx-auto py-8">
     <!-- Header + action buttons -->
@@ -26,30 +38,43 @@
 
     <!-- Basic information about the client -->
     <div class="bg-white shadow rounded-lg p-8 space-y-8 mb-10">
-        <div>
+    <div>
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Контактная информация</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <p class="text-sm text-gray-600">Email</p>
-                    <p class="mt-1 font-medium">{{ client.email|default:"—" }}</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="relative group">
+                <p class="text-base text-gray-600">Email</p>
+                <div class="relative inline-block">
+                    <p class="mt-1 text-2xl font-bold text-gray-900 cursor-pointer hover:text-indigo-600 transition-colors"
+                       title="Скопировать"
+                       onclick="copySimple('{{ client.email }}', this)" >
+                        {{ client.email|default:"—" }}
+                    </p>
                 </div>
-                <div>
-                    <p class="text-sm text-gray-600">Телефон</p>
-                    <p class="mt-1 font-medium">{{ client.phone|default:"—" }}</p>
+            </div>
+
+            <div class="relative group">
+                <p class="text-base text-gray-600">Телефон</p>
+                <div class="relative inline-block">
+                    <p class="mt-1 text-2xl font-bold text-gray-900 cursor-pointer hover:text-indigo-600 transition-colors"
+                       title="Скопировать"
+                       onclick="copySimple('{{ client.phone }}', this)">
+                        {{ client.phone|default:"—" }}
+                    </p>
                 </div>
             </div>
         </div>
-
-        <div>
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Заметки</h2>
-            <p class="whitespace-pre-wrap text-gray-700">{{ client.notes|default:"Нет заметок" }}</p>
-        </div>
-
-        <div>
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Дата создания</h2>
-            <p class="text-gray-700">{{ client.created_at|date:"d.m.Y H:i" }}</p>
-        </div>
     </div>
+
+    <div>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Заметки</h2>
+        <p class="whitespace-pre-wrap text-gray-700">{{ client.notes|default:"Нет заметок" }}</p>
+    </div>
+
+    <div>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Дата создания</h2>
+        <p class="text-gray-700">{{ client.created_at|date:"d.m.Y H:i" }}</p>
+    </div>
+</div>
 
     <!-- Client Project Block -->
     <div class="bg-white shadow rounded-lg p-8">
@@ -105,9 +130,10 @@
     <!-- Back button -->
     <div class="mt-10">
         <a href="{% url 'clients:list' %}"
-           class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium">
-            ← Вернуться к списку клиентов
+           class="bg-blue-400 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+            ← К списку клиентов
         </a>
     </div>
+
 </div>
 {% endblock %}

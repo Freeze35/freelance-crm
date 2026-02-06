@@ -4,29 +4,31 @@ from clients.models import Client
 from projects.models import Project
 from tasks.models import Task
 
+
 def dashboard(request):
     client_count = Client.objects.count()
 
-    # Total number of projects (excluding cancelled ones)
-    project_total = Project.objects.exclude(status='canceled').count()
+    # Считаем проекты по статусам
+    # Исключаем 'canceled', чтобы они не "мозолили" глаза в общей статистике
+    active_projects = Project.objects.exclude(status='canceled')
 
-    # In progress
-    project_in_progress = Project.objects.filter(status='in_progress').count()
+    project_total = active_projects.count()
+    project_new = active_projects.filter(status='new').count()
+    project_in_progress = active_projects.filter(status='in_progress').count()
+    project_done = active_projects.filter(status='completed').count()  # проверь, 'done' или 'completed' в модели
 
-    # Completed
-    project_done = Project.objects.filter(status='done').count()
-
-    # Overdue tasks
-    overdue_tasks = Task.objects.filter(
+    # Просроченные задачи (именно задачи, не проекты)
+    overdue_tasks_count = Task.objects.filter(
         status__in=['todo', 'in_progress'],
-        deadline__lt=timezone.now()
+        deadline__lt=timezone.now().date()
     ).count()
 
     context = {
         'client_count': client_count,
-        'project_total': project_total,          # ← общее количество
+        'project_total': project_total,
+        'project_new': project_new,
         'project_in_progress': project_in_progress,
         'project_done': project_done,
-        'overdue_tasks': overdue_tasks,
+        'overdue_tasks': overdue_tasks_count,
     }
     return render(request, 'dashboard.html', context)
