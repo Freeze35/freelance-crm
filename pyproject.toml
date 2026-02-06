@@ -1,26 +1,18 @@
-[project]
-name = "freelance-crm"
-version = "0.1.0"
-description = "Default template for PDM package"
-authors = [
-    {name = "Peter", email = "Petakioto2.0@gmail.com"},
-]
-dependencies = ["django-environ>=0.12.0"]
-requires-python = ">=3.11"
-readme = "README.md"
-license = {text = "MIT"}
+[tool.taskipy.tasks]
+# Применить миграции
+migrate = "python manage.py migrate"
 
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+# Создать новые миграции
+mm = "python manage.py makemigrations"
 
-
-[tool.pdm]
-distribution = true
-
-[tool.pdm.scripts]
+# Запуск сервера
 run = "python manage.py runserver"
+
+# Запуск воркера (Celery)
 worker = "celery -A crm.celery_app worker --loglevel=info -P solo"
-beat = "celery -A crm.celery_app beat --loglevel=info"
-#Test command: sends notification right now
-test_tg = { shell = "python manage.py shell -c \"from tasks.tasks import send_telegram_notifications; send_telegram_notifications.delay()\"" }
+
+# Тест телеграм (Исправленный путь и закрытая кавычка)
+test_tg = "python manage.py shell -c \"from tasks.tasks import send_telegram_notifications; send_telegram_notifications.delay()\""
+
+# Установка (Миграции + сервер)
+setup = "python manage.py migrate && python manage.py runserver"
