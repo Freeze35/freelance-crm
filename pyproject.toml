@@ -1,6 +1,6 @@
 [tool.taskipy.tasks]
 # Применить миграции
-migrate = "python manage.py migrate"
+m = "python manage.py migrate"
 
 # Создать новые миграции
 mm = "python manage.py makemigrations"
