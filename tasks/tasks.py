@@ -59,3 +59,35 @@ def send_telegram_notifications():
     except Exception as e:
         return f"Error: {str(e)}"
 
+@shared_task
+def send_telegram(chat_id: int | str, text: str = None, document_bytes: bytes = None, filename: str = None, caption: str = None):
+    """
+    Одна задача для всех отправок в Telegram:
+    - text → отправляет сообщение
+    - document_bytes → отправляет файл (PDF, фото и т.д.)
+    """
+    base_url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/"
+
+    try:
+        if document_bytes:
+            url = base_url + "sendDocument"
+            files = {'document': (filename or 'file.pdf', document_bytes, 'application/pdf')}
+            data = {'chat_id': chat_id}
+            if caption:
+                data['caption'] = caption
+                data['parse_mode'] = 'HTML'
+            response = requests.post(url, data=data, files=files, timeout=15)
+        else:
+            url = base_url + "sendMessage"
+            payload = {
+                'chat_id': chat_id,
+                'text': text or 'Сообщение без текста',
+                'parse_mode': 'HTML' if caption else 'Markdown'
+            }
+            response = requests.post(url, json=payload, timeout=10)
+
+        response.raise_for_status()
+        return "Отправлено успешно"
+
+    except Exception as e:
+        return f"Ошибка отправки: {str(e)}"

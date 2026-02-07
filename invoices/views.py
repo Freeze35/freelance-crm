@@ -4,17 +4,22 @@ from django.contrib import messages
 from .forms import InvoiceForm
 from projects.models import Project
 from datetime import timedelta
-from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
-from .models import Invoice
 from django.utils import timezone
 import base64
 import os
 from django.conf import settings
 import qrcode
 from io import BytesIO
+from celery import shared_task
+from invoices.models import Invoice
+from django.test import RequestFactory
+from tasks.tasks import send_telegram
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
 
 def invoice_create_from_project(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -104,3 +109,53 @@ def invoice_delete(request, pk):
     invoice.delete()
     messages.success(request, f'Счёт {invoice.number} успешно удалён.')
     return redirect('projects:detail', pk=project_pk)
+
+@shared_task
+def send_invoice_to_telegram(invoice_id: int, chat_id: int | str):
+    try:
+        invoice = Invoice.objects.get(id=invoice_id)
+
+        # Генерируем PDF в памяти
+        factory = RequestFactory()
+        fake_request = factory.get('/')
+        pdf_response = generate_invoice_pdf(fake_request, invoice_id)
+        pdf_bytes = pdf_response.content
+
+        caption = (
+            f"<b>Счёт №{invoice.number}</b>\n"
+            f"Сумма: {invoice.amount} ₽\n"
+            f"Проект: {invoice.project.name}\n"
+            f"Срок оплаты: {invoice.due_date.strftime('%d.%m.%Y')}\n"
+            f"Статус: {invoice.get_status_display()}"
+        )
+
+        # Запускаем универсальную отправку
+        result = send_telegram.delay(
+            chat_id=chat_id,
+            document_bytes=pdf_bytes,
+            filename=f"счёт_{invoice.number}.pdf",
+            caption=caption
+        )
+
+        # Можно вернуть результат (если нужно)
+        return result.get(timeout=30)  # ждём до 30 сек, или убрать .get() для полной асинхронности
+
+    except Invoice.DoesNotExist:
+        return f"Счёт {invoice_id} не найден"
+    except Exception as e:
+        return f"Ошибка: {str(e)}"
+
+@require_POST
+def send_invoice_telegram(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
+
+    # chat_id из клиента или из настроек (для теста)
+    chat_id = getattr(invoice.project.client, 'telegram_chat_id', None) or settings.TELEGRAM_CHAT_ID
+
+    if not chat_id:
+        return JsonResponse({'message': 'У клиента нет Telegram chat_id'}, status=400)
+
+    # Запускаем асинхронно через Celery
+    send_invoice_to_telegram.delay(invoice.pk, chat_id)
+
+    return JsonResponse({'message': 'Счёт отправляется в Telegram...'})

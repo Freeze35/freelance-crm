@@ -7,6 +7,13 @@ class Client(models.Model):
     phone = models.CharField(max_length=20,blank=True,verbose_name="Телефон")
     notes = models.TextField(blank=True,verbose_name="Заметки")
     created_at = models.DateTimeField(auto_now_add=True,verbose_name="Создан")
+    telegram_chat_id = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Telegram Chat ID",
+        help_text="Личный ID чата клиента в Telegram (начинается с минуса для групп или просто число для личных чатов)"
+    )
 
     class Meta:
         verbose_name = "Клиент"
