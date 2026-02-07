@@ -44,13 +44,12 @@ def project_create(request):
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    # Задачи (как было)
     tasks = project.tasks.all().order_by('deadline')
     task_paginator = Paginator(tasks, 6)  # 6 задач на страницу
     task_page_number = request.GET.get('task_page')
     task_page_obj = task_paginator.get_page(task_page_number)
 
-    # Счета — новая пагинация
+    # Accounts - New Pagination
     invoices = project.invoices.all().order_by('-created_at')  # новые сверху
     invoice_paginator = Paginator(invoices, 4)  # 10 счетов на страницу (можно изменить)
     invoice_page_number = request.GET.get('invoice_page')  # отдельный параметр
@@ -58,10 +57,10 @@ def project_detail(request, pk):
 
     context = {
         'project': project,
-        'page_obj': task_page_obj,          # для задач
+        'page_obj': task_page_obj,
         'tasks': task_page_obj,
         'today': timezone.now().date(),
-        'invoices': invoice_page_obj,       # для счетов
+        'invoices': invoice_page_obj,
         'invoice_paginator': invoice_paginator,
     }
     return render(request, 'projects/detail.html', context)

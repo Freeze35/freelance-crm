@@ -4,13 +4,17 @@ from django.contrib import messages
 from .forms import InvoiceForm
 from projects.models import Project
 from datetime import timedelta
-from django.utils import timezone
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from django.template.loader import render_to_string
-from invoices.models import Invoice
-from weasyprint import HTML
 from django.views.decorators.http import require_POST
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from .models import Invoice
+from django.utils import timezone
+import base64
+import os
+from django.conf import settings
+import qrcode
+from io import BytesIO
 
 def invoice_create_from_project(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -38,22 +42,38 @@ def invoice_create_from_project(request, project_id):
         'project': project
     })
 
+
 def generate_invoice_pdf(request, invoice_id):
     invoice = get_object_or_404(Invoice, pk=invoice_id)
 
-    # Render the template into a string
+    # Logo
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'logo.png')
+    logo_base64 = ""
+    if os.path.exists(logo_path):
+        with open(logo_path, "rb") as image_file:
+            logo_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
+    # QR CODE GENERATOR
+    # Here you can encrypt the payment link or SBP details
+    qr_data = f"ST00012|Name=ИП Иванов И.И.|PersonalAcc=40802810400000001234|BankName=Сбербанк|BIC=044525974|CorrespAcc=30101810145250000974|Sum={int(invoice.amount * 100)}"
+
+    qr = qrcode.make(qr_data)
+    qr_buffer = BytesIO()
+    qr.save(qr_buffer, format="PNG")
+    qr_code_base64 = base64.b64encode(qr_buffer.getvalue()).decode('utf-8')
+
     html_string = render_to_string('invoices/pdf_invoice.html', {
         'invoice': invoice,
         'now': timezone.now(),
+        'logo_base64': logo_base64,
+        'qr_code_base64': qr_code_base64,  # <-- Теперь QR появится!
     })
 
-    # Generate PDF
-    html = HTML(string=html_string)
+    html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
     pdf = html.write_pdf()
 
-    # Send as a downloadable file
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="счёт_{invoice.number}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="invoice_{invoice.number}.pdf"'
     response.write(pdf)
     return response
 

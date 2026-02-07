@@ -1,6 +1,8 @@
 from django.contrib import admin
-from django.urls import path, include
 from .views import dashboard
+from django.views.generic.base import RedirectView
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -9,4 +11,5 @@ urlpatterns = [
     path('clients/', include('clients.urls')),
     path('tasks/', include('tasks.urls')),
     path('invoices/', include('invoices.urls')),
+    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('favicon.ico'))),
 ]

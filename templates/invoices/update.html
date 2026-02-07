@@ -7,7 +7,7 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Редактировать счёт №{{ invoice.number }}</h1>
 
-        <!-- Кнопка удаления — справа сверху, красная, с подтверждением -->
+        <!-- The delete button is on the top right, red, with confirmation -->
         <form action="{% url 'invoices:delete' invoice.pk %}" method="post" style="display:inline;">
             {% csrf_token %}
             <button type="submit"

@@ -20,14 +20,13 @@ def send_telegram_notifications():
     message = "📊 *CRM REPORT* 📊\n"
     message += "—" * 15 + "\n\n"
 
-    # Функция для красивой группировки
     def format_section(tasks, title_emoji, section_name):
         if not tasks.exists():
             return ""
 
         section_text = f"{title_emoji} *{section_name}*\n"
 
-        # Группируем задачи по проектам в словаре
+        # Group tasks by projects in the dictionary
         projects = {}
         for task in tasks:
             project_name = task.project.name if task.project else "Без проекта"
@@ -35,7 +34,7 @@ def send_telegram_notifications():
                 projects[project_name] = []
             projects[project_name].append(task)
 
-        # Собираем текст из сгруппированных данных
+        # Collect text from grouped data
         for project, task_list in projects.items():
             section_text += f"\n📁 _Project: {project}_\n"
             for t in task_list:
