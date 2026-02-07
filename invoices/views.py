@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from invoices.models import Invoice
 from weasyprint import HTML
-
+from django.views.decorators.http import require_POST
 
 def invoice_create_from_project(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -76,3 +76,11 @@ def invoice_update(request, pk):
         'invoice': invoice,
         'project': project,
     })
+
+@require_POST
+def invoice_delete(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
+    project_pk = invoice.project.pk  # запоминаем проект для редиректа
+    invoice.delete()
+    messages.success(request, f'Счёт {invoice.number} успешно удалён.')
+    return redirect('projects:detail', pk=project_pk)

@@ -116,14 +116,14 @@
         <div class="mt-6 flex justify-center">
             <nav class="inline-flex rounded-md shadow">
                 {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}"
+                <a href="?task_page={{ page_obj.previous_page_number }}"
                    class="px-4 py-2 bg-white border border-gray-300 rounded-l-md text-gray-700 hover:bg-gray-50">
                     Назад
                 </a>
                 {% endif %}
 
                 {% for num in page_obj.paginator.page_range %}
-                <a href="?page={{ num }}"
+                <a href="?task_page={{ num }}"
                    class="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50
                               {% if page_obj.number == num %}bg-indigo-50 text-indigo-600 font-medium{% endif %}">
                     {{ num }}
@@ -131,7 +131,7 @@
                 {% endfor %}
 
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}"
+                <a href="?task_page={{ page_obj.next_page_number }}"
                    class="px-4 py-2 bg-white border border-gray-300 rounded-r-md text-gray-700 hover:bg-gray-50">
                     Вперед
                 </a>
@@ -152,6 +152,7 @@
         </div>
         {% endif %}
 
+        <!-- Блок счетов проекта -->
         <div class="mt-12">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <h2 class="text-2xl font-bold text-gray-900">Счета проекта</h2>
@@ -164,7 +165,7 @@
                 </a>
             </div>
 
-            {% if project.invoices.exists %}
+            {% if invoices %}
             <div class="bg-white shadow rounded-lg overflow-hidden">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -186,11 +187,9 @@
                     </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                    {% for invoice in project.invoices.all %}
-                    <!-- Вся строка кликабельна + hover-эффект -->
-                    <tr class="hover:bg-gray-100 transition-colors cursor-pointer"
+                    {% for invoice in invoices %}
+                    <tr class="hover:bg-gray-50 transition-colors cursor-pointer"
                         onclick="window.location='{% url 'invoices:update' invoice.pk %}'">
-                        <!-- Номер счёта — тоже кликабельный (дублирует поведение строки) -->
                         <td class="px-6 py-4 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
                             <a href="{% url 'invoices:update' invoice.pk %}">
                                 {{ invoice.number }}
@@ -212,7 +211,6 @@
                             {{ invoice.get_status_display }}
                         </span>
                         </td>
-                        <!-- Кнопка PDF (не кликабельна по строке, только сама ссылка) -->
                         <td class="px-6 py-4 text-sm font-medium" onclick="event.stopPropagation()">
                             <a href="{% url 'invoices:pdf' invoice.pk %}"
                                class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 hover:underline">
@@ -228,6 +226,36 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Пагинация счетов -->
+            {% if invoices.has_other_pages %}
+            <div class="mt-6 flex justify-center">
+                <nav class="inline-flex rounded-md shadow">
+                    {% if invoices.has_previous %}
+                    <a href="?invoice_page={{ invoices.previous_page_number }}"
+                       class="px-4 py-2 bg-white border border-gray-300 rounded-l-md text-gray-700 hover:bg-gray-50">
+                        Назад
+                    </a>
+                    {% endif %}
+
+                    {% for num in invoices.paginator.page_range %}
+                    <a href="?invoice_page={{ num }}"
+                       class="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50
+                          {% if invoices.number == num %}bg-indigo-50 text-indigo-600 font-medium{% endif %}">
+                        {{ num }}
+                    </a>
+                    {% endfor %}
+
+                    {% if invoices.has_next %}
+                    <a href="?invoice_page={{ invoices.next_page_number }}"
+                       class="px-4 py-2 bg-white border border-gray-300 rounded-r-md text-gray-700 hover:bg-gray-50">
+                        Вперед
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+
             {% else %}
             <div class="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -248,4 +276,33 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 1. Save the position BEFORE leaving the page
+    document.addEventListener('click', function (e) {
+        const link = e.target.closest('nav a');
+        // We check that the click was on the pagination (tasks or invoices)
+        if (link && (link.href.includes('task_page') || link.href.includes('invoice_page'))) {
+            localStorage.setItem('scrollPosition', window.scrollY);
+            }
+    });
+
+    // 2. Restore the position after loading the content
+    window.addEventListener('load', function () {
+        const scrollPosition = localStorage.getItem('scrollPosition');
+
+        if (scrollPosition) {
+            // Use requestAnimationFrame or setTimeout to give the browser time to render the table.
+            requestAnimationFrame(() => {
+                window.scrollTo({
+                    top: parseInt(scrollPosition),
+                    behavior: 'instant'
+                });
+                localStorage.removeItem('scrollPosition');
+            });
+        }
+    });
+</script>
 {% endblock %}
