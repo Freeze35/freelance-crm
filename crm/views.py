@@ -8,16 +8,15 @@ from tasks.models import Task
 def dashboard(request):
     client_count = Client.objects.count()
 
-    # Считаем проекты по статусам
-    # Исключаем 'canceled', чтобы они не "мозолили" глаза в общей статистике
+    # Counting projects by status
+    # Excluding 'canceled' statuses so they don't become an eyesore in the overall statistics
     active_projects = Project.objects.exclude(status='canceled')
 
     project_total = active_projects.count()
     project_new = active_projects.filter(status='new').count()
     project_in_progress = active_projects.filter(status='in_progress').count()
-    project_done = active_projects.filter(status='completed').count()  # проверь, 'done' или 'completed' в модели
+    project_done = active_projects.filter(status='completed').count()
 
-    # Просроченные задачи (именно задачи, не проекты)
     overdue_tasks_count = Task.objects.filter(
         status__in=['todo', 'in_progress'],
         deadline__lt=timezone.now().date()

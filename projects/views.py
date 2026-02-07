@@ -44,18 +44,16 @@ def project_create(request):
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    # Все задачи проекта
-    tasks = project.tasks.all().order_by('deadline')  # сортировка по дедлайну по умолчанию
+    tasks = project.tasks.all().order_by('deadline') # sort by deadline by default
 
-    # Пагинация: 8 задач на страницу
     paginator = Paginator(tasks, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
         'project': project,
-        'page_obj': page_obj,  # передаём объект пагинации
-        'tasks': page_obj,  # для совместимости с циклом {% for task in tasks %}
+        'page_obj': page_obj,
+        'tasks': page_obj,  # for compatibility with the {% for task in tasks %} loop
         'today': timezone.now().date(),
     }
     return render(request, 'projects/detail.html', context)

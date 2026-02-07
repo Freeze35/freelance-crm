@@ -1,18 +1,18 @@
 [tool.taskipy.tasks]
-# Применить миграции
+# Apply migrations
 m = "python manage.py migrate"
 
-# Создать новые миграции
+# Create new migrations
 mm = "python manage.py makemigrations"
 
-# Запуск сервера
+# Start server
 run = "python manage.py runserver"
 
-# Запуск воркера (Celery)
+# Start worker (Celery)
 worker = "celery -A crm.celery_app worker --loglevel=info -P solo"
 
-# Тест телеграм (Исправленный путь и закрытая кавычка)
+# Test Telegram (corrected path and closed quote)
 test_tg = "python manage.py shell -c \"from tasks.tasks import send_telegram_notifications; send_telegram_notifications.delay()\""
 
-# Установка (Миграции + сервер)
+# Setup (Migrations + server)
 setup = "python manage.py migrate && python manage.py runserver"

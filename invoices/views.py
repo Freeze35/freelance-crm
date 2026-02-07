@@ -20,7 +20,7 @@ def invoice_create_from_project(request, project_id):
         if form.is_valid():
             invoice = form.save(commit=False)
             invoice.project = project
-            # Автоматический номер счёта (INV-год-последовательный номер)
+            # Automatic account number (INV-year-sequential number)
             last_invoice = Invoice.objects.filter(project=project).order_by('-id').first()
             next_num = 1 if not last_invoice else int(last_invoice.number.split('-')[-1]) + 1
             invoice.number = f"INV-{timezone.now().year}-{next_num:03d}"
@@ -41,17 +41,17 @@ def invoice_create_from_project(request, project_id):
 def generate_invoice_pdf(request, invoice_id):
     invoice = get_object_or_404(Invoice, pk=invoice_id)
 
-    # Рендерим шаблон в строку
+    # Render the template into a string
     html_string = render_to_string('invoices/pdf_invoice.html', {
         'invoice': invoice,
         'now': timezone.now(),
     })
 
-    # Генерируем PDF
+    # Generate PDF
     html = HTML(string=html_string)
     pdf = html.write_pdf()
 
-    # Отправляем как скачиваемый файл
+    # Send as a downloadable file
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="счёт_{invoice.number}.pdf"'
     response.write(pdf)
@@ -66,9 +66,9 @@ def invoice_create_from_project(request, project_id):
             invoice = form.save(commit=False)
             invoice.project = project
 
-            # Автоматический номер: INV-год-последовательный номер (3 цифры)
+            # Automatic number: INV-year-sequential number (3 digits)
             current_year = timezone.now().year
-            # Считаем, сколько счетов уже есть за этот год (по всему проекту или глобально)
+            # We calculate how many invoices there are already for this year (for the entire project or globally)
             last_invoice = Invoice.objects.filter(
                 number__startswith=f"INV-{current_year}"
             ).order_by('-number').first()
