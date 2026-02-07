@@ -6,6 +6,7 @@ from .forms import ProjectForm
 from django.db.models import Count, Q
 from django.utils import timezone
 from tasks.models import Task
+from django.shortcuts import get_object_or_404
 
 def project_list(request):
     projects = Project.objects.all().order_by('-created_at').annotate(
@@ -25,6 +26,7 @@ def project_list(request):
         'projects': page_obj,
     }
     return render(request, 'projects/list.html', context)
+
 
 def project_create(request):
     if request.method == 'POST':
@@ -58,6 +60,7 @@ def project_detail(request, pk):
     }
     return render(request, 'projects/detail.html', context)
 
+
 def project_update(request, pk):
     project = get_object_or_404(Project, pk=pk)
     if request.method == 'POST':
@@ -70,6 +73,7 @@ def project_update(request, pk):
         form = ProjectForm(instance=project)
 
     return render(request, 'projects/update.html', {'form': form, 'project': project})
+
 
 def project_delete(request, pk):
     project = get_object_or_404(Project, pk=pk)

@@ -37,7 +37,7 @@
             </div>
             <div>
                 <h3 class="text-sm font-medium text-gray-500">Дедлайн</h3>
-                <p class="mt-1 text-base font-semibold text-gray-900">{{ project.deadline|date:"d.m.Y"|default:"—" }}</p>
+                <p class="mt-1 text-base font-semibold text-gray-900">{{ project.deadline|date:"d.m.Y"|default:"—"}}</p>
             </div>
             <div>
                 <h3 class="text-sm font-medium text-gray-500">Создан</h3>
@@ -70,9 +70,12 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Задача</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дедлайн</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Задача
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дедлайн
+                    </th>
                 </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -139,7 +142,8 @@
 
         {% else %}
         <div class="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-            <svg class="mx-auto h-20 w-20 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <svg class="mx-auto h-20 w-20 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.5" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
@@ -149,6 +153,7 @@
         {% endif %}
 
         <!-- Блок счетов проекта — добавлен здесь -->
+        <!-- Блок счетов проекта -->
         <div class="mt-12">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <h2 class="text-2xl font-bold text-gray-900">Счета проекта</h2>
@@ -165,38 +170,59 @@
             <div class="bg-white shadow rounded-lg overflow-hidden">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Номер счёта</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Сумма</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Срок оплаты</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PDF</th>
-                        </tr>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Номер
+                            счёта
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Сумма
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Срок
+                            оплаты
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Статус
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Действия
+                        </th>
+                    </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        {% for invoice in project.invoices.all %}
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                {{ invoice.number }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ invoice.amount }} ₽
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ invoice.due_date|date:"d.m.Y" }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium
-                                    {% if invoice.status == 'draft' %}bg-gray-100 text-gray-800
-                                    {% elif invoice.status == 'sent' %}bg-blue-100 text-blue-800
-                                    {% elif invoice.status == 'paid' %}bg-green-100 text-green-800
-                                    {% elif invoice.status == 'partially_paid' %}bg-yellow-100 text-yellow-800
-                                    {% elif invoice.status == 'overdue' %}bg-red-100 text-red-800{% endif %}">
-                                    {{ invoice.get_status_display }}
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
+                    {% for invoice in project.invoices.all %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                            {{ invoice.number }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            {{ invoice.amount }} ₽
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            {{ invoice.due_date|date:"d.m.Y" }}
+                        </td>
+                        <td class="px-6 py-4">
+                        <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium
+                            {% if invoice.status == 'draft' %}bg-gray-100 text-gray-800
+                            {% elif invoice.status == 'sent' %}bg-blue-100 text-blue-800
+                            {% elif invoice.status == 'paid' %}bg-green-100 text-green-800
+                            {% elif invoice.status == 'partially_paid' %}bg-yellow-100 text-yellow-800
+                            {% elif invoice.status == 'overdue' %}bg-red-100 text-red-800{% endif %}">
+                            {{ invoice.get_status_display }}
+                        </span>
+                        </td>
+                        <!-- Кнопка PDF -->
+                        <td class="px-6 py-4 text-sm font-medium">
+                            <a href="{% url 'invoices:pdf' invoice.pk %}"
+                               class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 hover:underline">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
