@@ -1,13 +1,29 @@
 {% extends 'base.html' %}
 
-{% block title %}Создать счёт — Freelance CRM{% endblock %}
+{% block title %}Редактировать счёт №{{ invoice.number }} — Freelance CRM{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto py-8 px-4">
-    <h1 class="text-2xl font-bold mb-6">Создать счёт для проекта: {{ project.name }}</h1>
+    <h1 class="text-2xl font-bold mb-6">Редактировать счёт №{{ invoice.number }}</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="mb-6 p-4 rounded-lg {% if 'success' in message.tags %}bg-green-100 text-green-800 border-l-4 border-green-500{% else %}bg-red-100 text-red-800 border-l-4 border-red-500{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
     <form method="post" class="space-y-6">
         {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Номер счёта</label>
+            <div class="mt-1">{{ form.number }}</div>
+            {% if form.number.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.number.errors|join:" " }}</p>
+            {% endif %}
+        </div>
 
         <div>
             <label class="block text-sm font-medium text-gray-700">Сумма (₽)</label>
@@ -33,15 +49,14 @@
             {% endif %}
         </div>
 
-        <!-- Кнопки по краям (только создание, без PDF) -->
         <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <a href="{% url 'projects:detail' project.pk %}"
+            <a href="{% url 'projects:detail' invoice.project.pk %}"
                class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition w-full sm:w-auto text-center">
-                ← Вернуться к проекту
+                ← Отмена (вернуться к проекту)
             </a>
 
             <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition w-full sm:w-auto">
-                Создать счёт
+                Сохранить изменения
             </button>
         </div>
     </form>

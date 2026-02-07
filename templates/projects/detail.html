@@ -152,8 +152,6 @@
         </div>
         {% endif %}
 
-        <!-- Блок счетов проекта — добавлен здесь -->
-        <!-- Блок счетов проекта -->
         <div class="mt-12">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <h2 class="text-2xl font-bold text-gray-900">Счета проекта</h2>
@@ -183,16 +181,20 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Статус
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Действия
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PDF
                         </th>
                     </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                     {% for invoice in project.invoices.all %}
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                            {{ invoice.number }}
+                    <!-- Вся строка кликабельна + hover-эффект -->
+                    <tr class="hover:bg-gray-100 transition-colors cursor-pointer"
+                        onclick="window.location='{% url 'invoices:update' invoice.pk %}'">
+                        <!-- Номер счёта — тоже кликабельный (дублирует поведение строки) -->
+                        <td class="px-6 py-4 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
+                            <a href="{% url 'invoices:update' invoice.pk %}">
+                                {{ invoice.number }}
+                            </a>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-900">
                             {{ invoice.amount }} ₽
@@ -210,8 +212,8 @@
                             {{ invoice.get_status_display }}
                         </span>
                         </td>
-                        <!-- Кнопка PDF -->
-                        <td class="px-6 py-4 text-sm font-medium">
+                        <!-- Кнопка PDF (не кликабельна по строке, только сама ссылка) -->
+                        <td class="px-6 py-4 text-sm font-medium" onclick="event.stopPropagation()">
                             <a href="{% url 'invoices:pdf' invoice.pk %}"
                                class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 hover:underline">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

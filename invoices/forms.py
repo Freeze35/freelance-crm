@@ -4,7 +4,7 @@ from .models import Invoice
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
-        fields = ['number', 'amount', 'due_date', 'status']
+        fields = ['amount', 'due_date', 'status']
         common_classes = 'w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition-all'
         widgets = {
             'number': forms.TextInput(attrs={

@@ -57,40 +57,22 @@ def generate_invoice_pdf(request, invoice_id):
     response.write(pdf)
     return response
 
-def invoice_create_from_project(request, project_id):
-    project = get_object_or_404(Project, pk=project_id)
+
+def invoice_update(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
+    project = invoice.project
 
     if request.method == 'POST':
-        form = InvoiceForm(request.POST)
+        form = InvoiceForm(request.POST, instance=invoice)
         if form.is_valid():
-            invoice = form.save(commit=False)
-            invoice.project = project
-
-            # Automatic number: INV-year-sequential number (3 digits)
-            current_year = timezone.now().year
-            # We calculate how many invoices there are already for this year (for the entire project or globally)
-            last_invoice = Invoice.objects.filter(
-                number__startswith=f"INV-{current_year}"
-            ).order_by('-number').first()
-
-            if last_invoice:
-                last_num = int(last_invoice.number.split('-')[-1])
-                next_num = last_num + 1
-            else:
-                next_num = 1
-
-            invoice.number = f"INV-{current_year}-{next_num:03d}"  # 001, 002, 003...
-
-            invoice.save()
-            messages.success(request, f'Счёт {invoice.number} успешно создан!')
+            form.save()
+            messages.success(request, f'Счёт {invoice.number} обновлён!')
             return redirect('projects:detail', pk=project.pk)
     else:
-        form = InvoiceForm(initial={
-            'amount': project.budget or 0,
-            'due_date': timezone.now().date() + timedelta(days=14),
-        })
+        form = InvoiceForm(instance=invoice)
 
-    return render(request, 'invoices/create.html', {
+    return render(request, 'invoices/update.html', {
         'form': form,
-        'project': project
+        'invoice': invoice,
+        'project': project,
     })
