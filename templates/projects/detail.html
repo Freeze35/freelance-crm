@@ -218,7 +218,7 @@
                                 <!-- PDF -->
                                 <a href="{% url 'invoices:pdf' invoice.pk %}"
                                    class="text-indigo-600 hover:text-indigo-800 transition"
-                                    title="Скачать счёт">
+                                   title="Скачать счёт">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                               d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -328,7 +328,12 @@
 
     function sendToTelegram(e, invoiceId) {
         e.stopPropagation();
-        if (!confirm('Отправить счёт в Telegram?')) return;
+
+        const resultDiv = document.getElementById(`telegram-result-${invoiceId}`);
+
+        if (resultDiv) {
+            resultDiv.innerHTML = '<span class="text-blue-600">Отправляется...</span>';
+        }
 
         fetch(`/invoices/${invoiceId}/send-telegram/`, {
             method: 'POST',
@@ -338,8 +343,28 @@
             }
         })
             .then(r => r.json())
-            .then(data => alert(data.message))
-            .catch(err => alert('Ошибка: ' + err));
+            .then(data => {
+                if (resultDiv) {
+                    if (data.message.includes('успешно')) {
+                        resultDiv.innerHTML = '<span class="text-green-600">✓ Отправлено!</span>';
+                    } else {
+                        resultDiv.innerHTML = `<span class="text-red-600">✗ ${data.message}</span>`;
+                    }
+                    // Авто-исчезновение через 3 секунды
+                    setTimeout(() => {
+                        resultDiv.innerHTML = '';
+                    }, 3000);
+                } else {
+                    alert(data.message);  // fallback, если div нет
+                }
+            })
+            .catch(err => {
+                if (resultDiv) {
+                    resultDiv.innerHTML = `<span class="text-red-600">Ошибка: ${err}</span>`;
+                } else {
+                    alert('Ошибка: ' + err);
+                }
+            });
     }
 </script>
 {% endblock %}
