@@ -16,3 +16,6 @@ test_tg = "python manage.py shell -c \"from tasks.tasks import send_telegram_not
 
 # Setup (Migrations + server)
 setup = "python manage.py migrate && python manage.py runserver"
+
+# Start bot (So that clients can write to the bot and register.)
+bot = "python bot/bot.py"

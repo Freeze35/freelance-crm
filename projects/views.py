@@ -36,7 +36,15 @@ def project_create(request):
             messages.success(request, f'Проект "{project.name}" успешно создан!')
             return redirect('projects:list')
     else:
-        form = ProjectForm()
+        # 1. Get the client ID from the GET parameter (for example, ?client=5)
+        client_id = request.GET.get('client')
+
+        # 2. Pass this ID to the 'initial' form data
+        initial_data = {}
+        if client_id:
+            initial_data['client'] = client_id
+
+        form = ProjectForm(initial=initial_data)
 
     return render(request, 'projects/create.html', {'form': form})
 
