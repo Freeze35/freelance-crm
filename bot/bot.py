@@ -2,12 +2,23 @@ import os
 import django
 import asyncio
 import logging
+import sys
 
 # ────────────────────────────────────────────────
 # Initializing Django
 # ────────────────────────────────────────────────
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'crm.settings')  # ← Replace 'crm' with the name of your project
-django.setup()  # ← this loads the settings and prepares the models
+# 1. Find the path to the project root (one folder above the bot folder)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# 2. Add the project root to the Python module search path
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
+
+# 3. Set the environment variable for Django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'crm.settings')
+
+# 4. Initialize Django
+django.setup()
 
 from clients.models import Client
 from aiogram import Bot, Dispatcher, types
@@ -96,14 +107,15 @@ async def process_inn(message: types.Message, state: FSMContext):
     )
     await state.set_state(RegisterForm.email)
 
+
 @dp.message(RegisterForm.email)
 async def process_email(message: types.Message, state: FSMContext):
     email_raw = message.text.strip()
 
-    #1 List of phrases we consider "skip"
+    # 1 List of phrases we consider "skip"
     skip_options = ["-", "пропустить", "нет", "не нужно", "skip", "none", "обойдусь"]
 
-    #2. Email Verification Logic
+    # 2. Email Verification Logic
     if email_raw.lower() in skip_options:
         email = None
         email_text = "не указан (копии на почту не будут приходить)"
@@ -121,12 +133,12 @@ async def process_email(message: types.Message, state: FSMContext):
         email = email_raw
         email_text = email
 
-    #3. Extracting accumulated data from FSM
+    # 3. Extracting accumulated data from FSM
     user_data = await state.get_data()
     organization = user_data.get('organization')
     inn = user_data.get('inn')
 
-    #4. Saving to Django Database via sync_to_async
+    # 4. Saving to Django Database via sync_to_async
     try:
         client, created = await sync_to_async(Client.objects.update_or_create)(
             inn=inn,
