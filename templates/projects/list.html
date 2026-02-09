@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Проекты — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Проекты</h1>
+        <a href="{% url 'projects:create' %}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+            + Добавить проект
+        </a>
+    </div>
+
+    {% if projects %}
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Название</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Клиент</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дедлайн</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Бюджет</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Задачи</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for project in projects %}
+                <tr class="hover:bg-indigo-50 transition-colors duration-150 cursor-pointer">
+                    <td colspan="6" class="p-0">
+                        <a href="{% url 'projects:detail' project.pk %}" class="block h-full">
+                            <div class="grid grid-cols-6 px-6 py-4 items-center">
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ project.name }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ project.client }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ project.get_status_display }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ project.deadline|date:"d.m.Y"|default:"—" }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ project.budget|default:"—" }}
+                                </div>
+
+                                <!-- Tasks with icons and quantity by status -->
+                                <div class="text-sm flex items-center gap-3 flex-wrap">
+                                    {% if project.todo_count > 0 %}
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            {{ project.todo_count }}
+                                        </span>
+                                    {% endif %}
+
+                                    {% if project.in_progress_count > 0 %}
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                            </svg>
+                                            {{ project.in_progress_count }}
+                                        </span>
+                                    {% endif %}
+
+                                    {% if project.done_count > 0 %}
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            {{ project.done_count }}
+                                        </span>
+                                    {% endif %}
+
+                                    {% if project.canceled_count > 0 %}
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                            {{ project.canceled_count }}
+                                        </span>
+                                    {% endif %}
+
+                                    {% if project.total_tasks == 0 %}
+                                        <span class="text-gray-400 text-xs">Нет задач</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                        Проектов пока нет
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <p class="text-lg text-gray-600">Проектов пока нет. Добавьте первый!</p>
+        <a href="{% url 'projects:create' %}" class="mt-4 inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            + Добавить проект
+        </a>
+    </div>
+    {% endif %}
+    <div>
+        <a href="{% url 'dashboard' %}" class="text-white bg-blue-400 hover:bg-blue-600 font-medium inline-flex items-center gap-2 order-2 sm:order-1 px-6 py-3 rounded-lg transition min-h-[48px] mt-6">
+            ← На главную страницу
+        </a>
+    </div>
+</div>
+{% endblock %}

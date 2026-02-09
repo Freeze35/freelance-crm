@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактировать проект: {{ project.name }} — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8">
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Название проекта</label>
+            <div class="mt-1">
+                {{ form.name }}
+            </div>
+            {% if form.name.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.name.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Клиент</label>
+            <div class="mt-1">
+                {{ form.client }}
+            </div>
+            {% if form.client.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.client.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Описание</label>
+            <div class="mt-1">
+                {{ form.description }}
+            </div>
+            {% if form.description.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.description.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Бюджет</label>
+            <div class="mt-1">
+                {{ form.budget }}
+            </div>
+            {% if form.budget.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.budget.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Статус</label>
+            <div class="mt-1">
+                {{ form.status }}
+            </div>
+            {% if form.status.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.status.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Дедлайн</label>
+            <div class="mt-1">
+                {{ form.deadline }}
+            </div>
+            {% if form.deadline.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.deadline.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div class="flex justify-between items-center mt-8">
+            <a href="{% url 'projects:detail' project.pk %}"
+               class="inline-flex items-center gap-2 font-medium bg-blue-400 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                ← Назад к проекту
+            </a>
+
+            <button type="submit"
+                    class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                Сохранить изменения
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

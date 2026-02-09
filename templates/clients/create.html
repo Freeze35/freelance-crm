@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавить клиента — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8">
+    <h1 class="text-2xl font-bold mb-6">Добавить нового клиента</h1>
+
+
+    <!-- Success Notification -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="mb-6 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Имя / Компания</label>
+            <div class="mt-1">
+                {{ form.name }}
+            </div>
+            {% if form.name.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.name.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <div class="mt-1">
+                {{ form.email }}
+            </div>
+            {% if form.email.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.email.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Телефон</label>
+            <div class="mt-1">
+                {{ form.phone }}
+            </div>
+            {% if form.phone.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.phone.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Заметки</label>
+            <div class="mt-1">
+                {{ form.notes }}
+            </div>
+            {% if form.notes.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.notes.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Telegram Chat ID</label>
+            <div class="mt-1">
+                {{ form.telegram_chat_id }}
+            </div>
+            <p class="mt-1 text-xs text-gray-500">Заполняется автоматически при регистрации через бота или вручную.</p>
+            {% if form.telegram_chat_id.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.telegram_chat_id.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div class="flex justify-between items-center mt-8">
+            <button type="button" onclick="window.history.back()"
+                    class="bg-blue-400 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                ← Назад
+            </button>
+
+            <div class="flex gap-4">
+                <button type="submit" name="action" value="save_and_add"
+                        class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                    Сохранить и добавить ещё
+                </button>
+
+                <button type="submit"
+                        class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                    Сохранить клиента
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

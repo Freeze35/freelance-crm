@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактировать счёт №{{ invoice.number }} — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8 px-4">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Редактировать счёт №{{ invoice.number }}</h1>
+
+        <!-- The delete button is on the top right, red, with confirmation -->
+        <form action="{% url 'invoices:delete' invoice.pk %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit"
+                    onclick="return confirm('Удалить счёт №{{ invoice.number }}? Это действие нельзя отменить.');"
+                    class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Удалить
+            </button>
+        </form>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="mb-6 p-4 rounded-lg {% if 'success' in message.tags %}bg-green-100 text-green-800 border-l-4 border-green-500{% else %}bg-red-100 text-red-800 border-l-4 border-red-500{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Номер счёта</label>
+            <div class="mt-1">{{ form.number }}</div>
+            {% if form.number.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.number.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Сумма (₽)</label>
+            <div class="mt-1">{{ form.amount }}</div>
+            {% if form.amount.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.amount.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Срок оплаты</label>
+            <div class="mt-1">{{ form.due_date }}</div>
+            {% if form.due_date.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.due_date.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Статус</label>
+            <div class="mt-1">{{ form.status }}</div>
+            {% if form.status.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.status.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <a href="{% url 'projects:detail' invoice.project.pk %}"
+               class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition w-full sm:w-auto text-center">
+                ← Отмена (вернуться к проекту)
+            </a>
+
+            <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition w-full sm:w-auto">
+                Сохранить изменения
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

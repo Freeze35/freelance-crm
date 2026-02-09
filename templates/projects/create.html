@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Создать проект — Freelance CRM{% endblock %}
+
+{% block content %}
+
+<!--Maximum height of drop-down list-->
+<style>
+    select {
+        max-height: 100px; /* максимальная высота раскрытого списка */
+        overflow-y: auto; /* скролл при превышении */
+    }
+</style>
+
+<div class="max-w-2xl mx-auto py-8">
+    <h1 class="text-2xl font-bold mb-6">Создать новый проект</h1>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="mb-6 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Название проекта</label>
+            <div class="mt-1">
+                {{ form.name }}
+            </div>
+            {% if form.name.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.name.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Клиент</label>
+            <div class="mt-1">
+                {{ form.client }}
+            </div>
+            {% if form.client.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.client.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Описание</label>
+            <div class="mt-1">
+                {{ form.description }}
+            </div>
+            {% if form.description.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.description.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Бюджет</label>
+            <div class="mt-1">
+                {{ form.budget }}
+            </div>
+            {% if form.budget.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.budget.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Статус</label>
+            <div class="mt-1">
+                {{ form.status }}
+            </div>
+            {% if form.status.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.status.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Дедлайн</label>
+            <div class="mt-1">
+                {{ form.deadline }}
+            </div>
+            {% if form.deadline.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.deadline.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 border-t border-gray-100 pt-6">
+            <a href="{% url 'projects:list' %}"
+               class="text-white bg-blue-400 hover:bg-blue-600 font-medium inline-flex items-center gap-2 px-6 py-2 rounded-lg transition min-h-[48px] w-full sm:w-auto justify-center">
+                ← К списку проектов
+            </a>
+
+            <button type="submit"
+                    class="bg-blue-600 text-white px-8 py-2 rounded-lg hover:bg-blue-700 active:scale-95 transition min-h-[48px] w-full sm:w-auto flex items-center justify-center font-medium">
+                Создать проект
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

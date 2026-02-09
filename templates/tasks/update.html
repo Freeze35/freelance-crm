@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактировать задачу: {{ task.title }} — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <form method="post" id="task-form" class="space-y-8">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white shadow rounded-lg p-6 space-y-6 min-h-[400px] flex flex-col">
+                <h1 class="text-2xl font-bold text-gray-900">Редактирование задачи</h1>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Название задачи</label>
+                    <div class="mt-1">{{ form.title }}</div>
+                    {% if form.title.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.title.errors|join:" " }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Дедлайн</label>
+                    <div class="mt-1">{{ form.deadline }}</div>
+                    {% if form.deadline.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.deadline.errors|join:" " }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Создана</label>
+                    <p class="mt-1 text-base text-gray-900">{{ task.created_at|date:"d.m.Y H:i" }}</p>
+                </div>
+            </div>
+
+            <div class="bg-white shadow rounded-lg p-6 flex flex-col space-y-6 min-h-[400px]">
+                <div class="flex justify-end">
+                    <div class="inline-flex items-center gap-3">
+                        <label class="text-sm font-medium text-gray-700">Статус:</label>
+                        {{ form.status }}
+                    </div>
+                </div>
+
+                <div class="flex-grow">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Описание задачи</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.description.errors|join:" " }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </form> <div class="mt-8 bg-white shadow rounded-lg p-6 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-gray-200">
+        <a href="{% url 'projects:detail' task.project.pk %}"
+           class="text-white bg-blue-400 hover:bg-blue-600 font-medium inline-flex items-center gap-2 order-2 sm:order-1 px-6 py-3 rounded-lg transition min-h-[48px] flex items-center justify-center">
+            ← Вернуться к проекту
+        </a>
+
+        <div class="flex flex-col sm:flex-row gap-4 order-1 sm:order-2 w-full sm:w-auto">
+            <form action="{% url 'tasks:delete' task.pk %}" method="post" style="display:inline; width: 100%;">
+                {% csrf_token %}
+                <button type="submit"
+                        onclick="return confirm('Вы уверены?');"
+                        class="bg-red-500 text-white px-8 py-3 rounded-lg hover:bg-red-600 transition min-h-[48px] flex items-center justify-center w-full sm:w-auto">
+                    Удалить задачу
+                </button>
+            </form>
+
+            <button type="submit" form="task-form"
+                    class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition min-h-[48px] flex items-center justify-center w-full sm:w-auto">
+                Сохранить
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+[tool.taskipy.tasks]
+# Apply migrations
+m = "python manage.py migrate"
+
+# Create new migrations
+mm = "python manage.py makemigrations"
+
+# Start server
+run = "python manage.py runserver"
+
+# Start worker (Celery)
+worker = "celery -A crm.celery_app worker --loglevel=info -P solo"
+
+# Test Telegram (corrected path and closed quote)
+test_tg = "python manage.py shell -c \"from tasks.tasks import send_telegram_notifications; send_telegram_notifications.delay()\""
+
+# Setup (Migrations + server)
+setup = "python manage.py migrate && python manage.py runserver"
+
+# Start bot (So that clients can write to the bot and register.)
+bot = "python bot/bot.py"

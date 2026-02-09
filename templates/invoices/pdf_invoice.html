@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Счёт №{{ invoice.number }}</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 40px 60px;
+            font-size: 11pt;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a3c5e;
+            margin: 0 0 20px;
+            font-size: 22pt;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-height: 160px;
+            width: auto;
+            display: block;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .info-table td {
+            padding: 6px 0;
+            vertical-align: top;
+        }
+
+        .info-table .label {
+            width: 160px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        table.main {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 30px;
+        }
+
+        th, td {
+            border: 1px solid #c0c0c0;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f5f7fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            background-color: #f0f4f8;
+        }
+
+        .total-row .label {
+            text-align: right;
+        }
+
+        .bank-details {
+            margin: 30px 0;
+            padding: 15px;
+            background-color: #f9fbfc;
+            border: 1px solid #e0e7ee;
+            border-radius: 6px;
+        }
+
+        .bank-details h3 {
+            margin: 0 0 12px;
+            font-size: 13pt;
+            color: #1a3c5e;
+        }
+
+        .bank-details p {
+            margin: 4px 0;
+            font-size: 10.5pt;
+        }
+
+        .signature {
+            margin-top: 50px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .signature div {
+            text-align: center;
+            width: 220px;
+        }
+
+        .signature .line {
+            border-top: 1px solid #333;
+            margin: 40px 0 8px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 9pt;
+            color: #777;
+        }
+
+        .qr-code {
+            float: right;
+            margin: 0 0 20px 20px;
+            text-align: center;
+        }
+
+        .qr-code img {
+            width: 140px;
+            height: 140px;
+        }
+
+        .qr-code p {
+            margin: 6px 0 0;
+            font-size: 9pt;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    {% if logo_base64 %}
+    <img src="data:image/png;base64,{{ logo_base64 }}" alt="Логотип" class="logo">
+    {% else %}
+    <div style="font-weight: bold; color: #1a3c5e;">Freelance CRM</div>
+    {% endif %}
+
+    <div style="text-align: right;">
+        <h1>Счёт №{{ invoice.number }}</h1>
+    </div>
+</div>
+
+<table class="info-table">
+    <tr>
+        <td class="label">Исполнитель:</td>
+        <td>Иванов Иван Иванович<br>ИП Иванов И.И.<br>ИНН 123456789012</td>
+    </tr>
+    <tr>
+        <td class="label">Клиент:</td>
+        <td>{{ invoice.project.client|default:"—" }}</td>
+    </tr>
+    <tr>
+        <td class="label">Проект:</td>
+        <td>{{ invoice.project.name }}</td>
+    </tr>
+    <tr>
+        <td class="label">Дата выставления:</td>
+        <td>{{ invoice.issue_date|date:"d.m.Y" }}</td>
+    </tr>
+    <tr>
+        <td class="label">Срок оплаты:</td>
+        <td>{{ invoice.due_date|date:"d.m.Y" }}</td>
+    </tr>
+    <tr>
+        <td class="label">Статус:</td>
+        <td>{{ invoice.get_status_display }}</td>
+    </tr>
+</table>
+
+<!-- QR code on the right -->
+<div class="qr-code">
+    <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR-код для оплаты">
+    <p>Оплатить по СБП</p>
+</div>
+
+<table class="main">
+    <thead>
+    <tr>
+        <th style="width: 60%">Описание</th>
+        <th style="width: 20%">Сумма</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Услуги по проекту «{{ invoice.project.name }}»</td>
+        <td>{{ invoice.amount }} ₽</td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr class="total-row">
+        <td class="label">Итого к оплате:</td>
+        <td>{{ invoice.amount }} ₽</td>
+    </tr>
+    </tfoot>
+</table>
+
+<div style="page-break-before: always;"></div>
+
+<div class="bank-details">
+    <h3>Реквизиты для оплаты</h3>
+    <p><strong>Получатель:</strong> ИП Иванов Иван Иванович</p>
+    <p><strong>ИНН:</strong> 123456789012</p>
+    <p><strong>Расчётный счёт:</strong> 40802810400000001234</p>
+    <p><strong>Банк:</strong> Сбербанк</p>
+    <p><strong>БИК:</strong> 044525974</p>
+    <p><strong>Корр. счёт:</strong> 30101810145250000974</p>
+    <p><strong>СБП / Телефон для оплаты:</strong> +7 (999) 123-45-67</p>
+</div>
+
+<div class="signature">
+    <div>
+        <div class="line"></div>
+        <p>Иванов И.И. / ИП</p>
+    </div>
+</div>
+
+<div class="footer">
+    Сгенерировано в Freelance CRM<br>
+    Дата генерации: {{ now|date:"d.m.Y H:i" }}
+</div>
+</body>
+</html>

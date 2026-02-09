@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Создать счёт — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8 px-4">
+    <h1 class="text-2xl font-bold mb-6">Создать счёт для проекта: {{ project.name }}</h1>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Сумма (₽)</label>
+            <div class="mt-1">{{ form.amount }}</div>
+            {% if form.amount.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.amount.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Срок оплаты</label>
+            <div class="mt-1">{{ form.due_date }}</div>
+            {% if form.due_date.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.due_date.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Статус</label>
+            <div class="mt-1">{{ form.status }}</div>
+            {% if form.status.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.status.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <a href="{% url 'projects:detail' project.pk %}"
+               class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition w-full sm:w-auto text-center">
+                ← Вернуться к проекту
+            </a>
+
+            <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition w-full sm:w-auto">
+                Создать счёт
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Freelance CRM{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'favicon.ico' %}?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,400;0,700;1,400&display=swap"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <style>
+
+        /* Apply the font to the entire project */
+        body {
+            font-family: 'SN Pro', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100">
+<header class="bg-blue-600 text-white shadow">
+    <div class="container mx-auto px-4 py-4">
+        <h1 class="text-2xl font-bold">
+            <a href="{% url 'dashboard' %}">Freelance CRM</a>
+        </h1>
+    </div>
+</header>
+
+<main class="container mx-auto px-4 py-8 flex-grow">
+    {% block content %}
+    {% endblock %}
+</main>
+
+<footer class="bg-gray-800 text-gray-400 text-center py-4 mt-auto">
+    <p>© 2026 Freelance CRM</p>
+</footer>
+
+<div id="toast-container" class="fixed right-5 z-50 flex flex-col gap-3" style="top: 5%;">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="toast-item transform transition-all duration-500 translate-x-full opacity-0 bg-white border-l-4 {% if message.tags == 'error' %}border-red-600{% else %}border-blue-600{% endif %} shadow-xl rounded-lg p-4 min-w-[300px] flex items-center justify-between">
+        <div class="flex items-center">
+            <p class="text-sm font-semibold text-gray-800">{{ message }}</p>
+        </div>
+        <button onclick="closeToast(this)" class="ml-4 text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+<script>
+    function closeToast(button) {
+        const toast = button.closest('.toast-item');
+        toast.classList.add('opacity-0', 'translate-y-[-20px]');
+        setTimeout(() => {
+            toast.remove();
+        }, 500);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const toasts = document.querySelectorAll('.toast-item');
+        toasts.forEach((toast, index) => {
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full', 'opacity-0');
+                toast.classList.add('translate-x-0', 'opacity-100');
+            }, 150 * index);
+
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.classList.add('opacity-0', 'translate-y-[-20px]');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 500);
+                }
+            }, 3000);
+        });
+    });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

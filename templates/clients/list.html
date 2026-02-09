@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Клиенты — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Клиенты</h1>
+        <a href="{% url 'clients:create' %}"
+           class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+            + Добавить клиента
+        </a>
+    </div>
+
+    {% if page_obj %}
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Имя / Компания</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Телефон</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Создан</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for client in page_obj %}
+                <tr class="hover:bg-gray-50 cursor-pointer"
+                    title="Открыть подробнее"
+                    onclick="window.location.href='{% url 'clients:detail' client.pk %}'">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{ client.name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ client.email|default:"—" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ client.formatted_phone|default:"—" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ client.created_at|date:"d.m.Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Клиентов пока нет</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination block (at the bottom of the table) -->
+    {% if page_obj.has_other_pages %}
+    <div class="mt-6 flex justify-center">
+        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}"
+                   class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    ← Предыдущая
+                </a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                <a href="?page={{ num }}"
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 {% if page_obj.number == num %}bg-indigo-50 text-indigo-600{% endif %}">
+                    {{ num }}
+                </a>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}"
+                   class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    Следующая →
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-12">
+        <p class="text-lg text-gray-600">Клиентов пока нет. Добавьте первого!</p>
+        <a href="{% url 'clients:create' %}" class="mt-4 inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+            + Добавить клиента
+        </a>
+    </div>
+    {% endif %}
+    <div>
+        <a href="{% url 'dashboard' %}" class="text-white bg-blue-400 hover:bg-blue-600 font-medium inline-flex items-center gap-2 order-2 sm:order-1 px-6 py-3 rounded-lg transition min-h-[48px] mt-6">
+            ← На главную страницу
+        </a>
+    </div>
+</div>
+{% endblock %}

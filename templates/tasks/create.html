@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавить задачу — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8">
+    <h1 class="text-2xl font-bold mb-6">Добавить задачу в проект: {{ project.name }}</h1>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="mb-6 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700 rounded">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Название задачи</label>
+            <div class="mt-1">{{ form.title }}</div>
+            {% if form.title.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.title.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Описание</label>
+            <div class="mt-1">{{ form.description }}</div>
+            {% if form.description.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.description.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Статус</label>
+            <div class="mt-1">{{ form.status }}</div>
+            {% if form.status.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.status.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Дедлайн</label>
+            <div class="mt-1">{{ form.deadline }}</div>
+            {% if form.deadline.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.deadline.errors|join:" " }}</p>
+            {% endif %}
+        </div>
+
+        <div class="flex justify-between items-center gap-4 mt-8">
+            <a href="{% url 'projects:detail' project.pk %}"
+               class="bg-blue-400 text-white px-8 py-3 rounded-lg hover:bg-blue-600 transition transition">
+                ← Назад к проекту
+            </a>
+
+            <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition">
+                Создать задачу
+            </button>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

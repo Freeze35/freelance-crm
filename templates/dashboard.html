@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900">Freelance CRM</h1>
+    <p class="mt-4 text-lg text-gray-600">Инструмент для работы с клиентами и проектами</p>
+
+    <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Clients Card -->
+        <a href="{% url 'clients:list' %}"
+           title="Открыть полный список клиентов"
+           class="block bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-200">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900">Клиенты</h3>
+                <p class="mt-1 text-3xl font-semibold text-indigo-600">{{ client_count }}</p>
+                <p class="text-sm text-gray-500">Всего клиентов</p>
+            </div>
+        </a>
+
+        <!-- Card Projects -->
+        <a href="{% url 'projects:list' %}"
+           title="Открыть полный список проектов"
+           class="block bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-200">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900">Проекты</h3>
+                <p class="mt-1 text-3xl font-semibold">
+                    <span class="text-blue-600">{{ project_total }}</span>
+
+                    <span class="text-xl text-gray-400 ml-1">
+            (
+            <span class="text-blue-500" title="Новые">{{ project_new }}</span>
+            <span class="mx-1">/</span>
+            <span class="text-yellow-500" title="В работе">{{ project_in_progress }}</span>
+            <span class="mx-1">/</span>
+            <span class="text-green-500" title="Завершено">{{ project_done }}</span>
+            )
+        </span>
+                </p>
+                <p class="text-sm text-gray-500 mt-1">Всего (новые / в работе / завершено)</p>
+            </div>
+        </a>
+
+        <!--Overdue projects-->
+        <a href="{% url 'projects:overdue_tasks' %}" class="block hover:shadow-lg transition-shadow">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg font-medium text-gray-900">Просроченные задачи</h3>
+                    <p class="mt-1 text-3xl font-semibold text-red-600">{{ overdue_tasks }}</p>
+                    <p class="text-sm text-gray-500">Нажмите, чтобы увидеть список</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

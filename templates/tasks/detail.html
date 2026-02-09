@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ task.title }} — Freelance CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Left column: list of information + action buttons -->
+        <div class="lg:w-1/3 bg-white shadow rounded-lg p-6 space-y-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">{{ task.title }}</h1>
+
+            <dl class="space-y-4 text-sm">
+                <div>
+                    <dt class="font-medium text-gray-600">Проект</dt>
+                    <dd class="mt-1">
+                        <a href="{% url 'projects:detail' task.project.pk %}" class="text-indigo-600 hover:text-indigo-800 hover:underline">
+                            {{ task.project }}
+                        </a>
+                    </dd>
+                </div>
+
+                <div>
+                    <dt class="font-medium text-gray-600">Дедлайн</dt>
+                    <dd class="mt-1">{{ task.deadline|date:"d.m.Y"|default:"—" }}</dd>
+                </div>
+
+                <div>
+                    <dt class="font-medium text-gray-600">Создана</dt>
+                    <dd class="mt-1">{{ task.created_at|date:"d.m.Y H:i" }}</dd>
+                </div>
+
+            </dl>
+
+            <!-- Action Buttons -->
+            <div class="pt-6 border-t border-gray-200 flex flex-col gap-3">
+                <a href="{% url 'tasks:update' task.pk %}"
+                   class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition text-center font-medium">
+                    Редактировать задачу
+                </a>
+
+                <form action="{% url 'tasks:delete' task.pk %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit"
+                            onclick="return confirm('Удалить задачу «{{ task.title }}»?');"
+                            class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition w-full font-medium">
+                        Удалить задачу
+                    </button>
+                </form>
+            </div>
+
+            <div class="pt-4">
+                <a href="{% url 'projects:detail' task.project.pk %}"
+                   class="text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center gap-2">
+                    ← Вернуться к проекту
+                </a>
+            </div>
+        </div>
+
+        <!-- Right column: description + status top right -->
+        <div class="lg:w-2/3 space-y-6">
+            <div class="flex justify-end">
+                <form action="{% url 'tasks:update' task.pk %}" method="post" class="inline-flex items-center gap-3">
+                    {% csrf_token %}
+                    <label for="id_status" class="text-sm font-medium text-gray-700">Статус:</label>
+                    <select name="status" id="id_status"
+                            class="block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            onchange="this.form.submit()">
+                        {% for value, label in task.STATUS_CHOICES %}
+                            <option value="{{ value }}" {% if task.status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+
+            <!-- Description (center) -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Описание задачи</h3>
+                <p class="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                    {{ task.description|default:"Нет описания" }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
