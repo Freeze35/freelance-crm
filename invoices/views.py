@@ -145,7 +145,8 @@ def send_invoice_to_telegram(invoice_id: int, chat_id: int | str):
         # 4. Sending via the send_telegram function
         result = send_telegram.run(
             chat_id=chat_id,
-            document=pdf_file,
+            document_bytes=pdf_file,
+            filename=f"invoice_{invoice.number}.pdf",
             caption=caption
         )
 
