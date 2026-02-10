@@ -1,19 +1,21 @@
 import pytest
-from django.utils import timezone
-from datetime import timedelta
 from projects.models import Project
+from clients.models import Client
 
 
 @pytest.mark.django_db
 class TestProjectModel:
 
-    def test_project_str_representation(self, project):
-        expected_name = f"{project.name} ({project.client})"
+    def test_project_str_representation(self, project: Project) -> None:
+        """Verify the project string representation format"""
+        expected_name: str = f"{project.name} ({project.client})"
         assert str(project) == expected_name
 
-    def test_cascade_delete_client(self, project):
-        """Checking that deleting a client also deletes its projects"""
-        client = project.client
+    def test_cascade_delete_client(self, project: Project) -> None:
+        """Verify that deleting a client also deletes its associated projects"""
+        client: Client = project.client
+        project_pk: int = project.pk
+
         client.delete()
-        # We check that the project that was linked to this client has disappeared
-        assert Project.objects.filter(id=project.id).count() == 0
+
+        assert Project.objects.filter(pk=project_pk).count() == 0

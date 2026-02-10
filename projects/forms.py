@@ -1,13 +1,20 @@
 from django import forms
 from .models import Project
+from typing import Dict, Any
+
 
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ['name', 'client', 'description', 'budget', 'status', 'deadline']
-        common_classes = 'w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition-all'
+        fields: list[str] = ['name', 'client', 'description', 'budget', 'status', 'deadline']
 
-        widgets = {
+        # Define Tailwind CSS classes for consistent styling
+        common_classes: str = (
+            'w-full px-4 py-2 border-2 border-blue-600 rounded-lg '
+            'focus:ring-2 focus:ring-blue-400 outline-none transition-all'
+        )
+
+        widgets: Dict[str, Any] = {
             'name': forms.TextInput(attrs={'class': common_classes, 'placeholder': 'Название проекта'}),
             'client': forms.Select(attrs={'class': common_classes}),
             'description': forms.Textarea(attrs={'class': common_classes, 'rows': 3}),

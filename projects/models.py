@@ -1,8 +1,9 @@
 from django.db import models
 from clients.models import Client
+from typing import List, Tuple
 
 class Project(models.Model):
-    STATUS_CHOICES = [
+    STATUS_CHOICES: List[Tuple[str, str]] = [
         ('new', 'Новый'),
         ('in_progress', 'В работе'),
         ('done', 'Завершён'),
@@ -10,7 +11,7 @@ class Project(models.Model):
     ]
 
     name = models.CharField(max_length=255, verbose_name="Название проекта")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE,related_name='projects', verbose_name="Клиент")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='projects', verbose_name="Клиент")
     description = models.TextField(blank=True, verbose_name="Описание")
     budget = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Бюджет")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', verbose_name="Статус")
@@ -22,5 +23,6 @@ class Project(models.Model):
         verbose_name_plural = "Проекты"
         ordering = ["-created_at"]
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return the project name and its associated client as a string"""
         return f"{self.name} ({self.client})"
