@@ -20,6 +20,7 @@ from tasks.tasks import send_telegram
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
+from django.contrib.staticfiles import finders
 
 def invoice_create_from_project(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -51,21 +52,22 @@ def invoice_create_from_project(request, project_id):
 def generate_invoice_pdf(request, invoice_id):
     invoice = get_object_or_404(Invoice, pk=invoice_id)
 
-    # Logo
-    logo_path = os.path.join(settings.BASE_DIR, 'static', 'logo.png')
+    # ЛОГОТИП: Используем finders, чтобы найти файл и в разработке, и в деплое
+    logo_path = finders.find('logo.png')
     logo_base64 = ""
-    if os.path.exists(logo_path):
+
+    if logo_path and os.path.exists(logo_path):
         with open(logo_path, "rb") as image_file:
             logo_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 
-    # QR CODE GENERATOR
-    # Here you can encrypt the payment link or SBP details
+    # QR CODE GENERATOR (твой обновленный код — он теперь верный)
     qr_data = f"ST00012|Name=ИП Иванов И.И.|PersonalAcc=40802810400000001234|BankName=Сбербанк|BIC=044525974|CorrespAcc=30101810145250000974|Sum={int(invoice.amount * 100)}"
 
     qr_engine = qrcode.QRCode(version=1, box_size=10, border=5)
     qr_engine.add_data(qr_data)
     qr_engine.make(fit=True)
     qr = qr_engine.make_image(fill_color="black", back_color="white")
+
     qr_buffer = BytesIO()
     qr.save(qr_buffer, format="PNG")
     qr_code_base64 = base64.b64encode(qr_buffer.getvalue()).decode('utf-8')
@@ -74,9 +76,10 @@ def generate_invoice_pdf(request, invoice_id):
         'invoice': invoice,
         'now': timezone.now(),
         'logo_base64': logo_base64,
-        'qr_code_base64': qr_code_base64,  # <-- Теперь QR появится!
+        'qr_code_base64': qr_code_base64,
     })
 
+    # Для PDF важно указать base_url, чтобы WeasyPrint понимал относительные пути
     html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
     pdf = html.write_pdf()
 
