@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# Системные зависимости + git и git-lfs
+# System dependencies + git and git-lfs
 RUN apt-get update && apt-get install -y \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
@@ -18,11 +18,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Если Koyeb передает папку .git, то вытягиваем реальные файлы вместо указателей
-# Если папки .git нет, команда просто пропустится
+# If Koyeb passes a .git folder, we pull the actual files instead of pointers.
+# If there is no .git folder, the command will simply be skipped.
 RUN if [ -d ".git" ]; then git lfs pull; fi
 
-# Даем права на выполнение скрипту запуска
+# Grant execution rights to the launch script
 RUN chmod +x start.sh
 
 EXPOSE 8000

@@ -128,7 +128,7 @@ async def process_email(message: types.Message, state: FSMContext):
                 "Пожалуйста, введите корректный адрес (например: example@mail.ru) "
                 "или напишите слово «пропустить»:"
             )
-            return  # Прерываем выполнение, ждем новый ввод
+            return
 
         email = email_raw
         email_text = email
@@ -164,7 +164,7 @@ async def process_email(message: types.Message, state: FSMContext):
 
         # Remove the keyboard (Registration button), as it is no longer needed
         await message.answer(response, reply_markup=types.ReplyKeyboardRemove())
-        await state.clear()  # Очищаем состояние после успешного завершения
+        await state.clear()  # Clear the state after successful completion
 
     except Exception as e:
         logging.error(f"Ошибка при сохранении клиента: {e}")

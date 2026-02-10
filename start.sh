@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# 1. Запуск локального Redis (для Celery)
+# 1. Start local Redis (for Celery)
 redis-server --daemonize yes
 
-# 2. Применение миграций
+# 2. Apply migrations
 python manage.py migrate
 
-# 3. Запуск Celery в фоне
+# 3. Start Celery in the background
 celery -A crm worker --loglevel=info --concurrency=1 &
 
-# 4. Запуск Telegram бота в фоне
+# 4. Start the Telegram bot in the background
 python bot/bot.py &
 
-# 5. Запуск основного процесса Django (не в фоне!)
+# 5. Start the main Django process (not in the background!)
 python manage.py runserver 0.0.0.0:8000
