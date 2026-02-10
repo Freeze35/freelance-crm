@@ -1,9 +1,10 @@
 from django.db import models
 from projects.models import Project
 from django.utils import timezone
+from typing import List, Tuple
 
 class Invoice(models.Model):
-    STATUS_CHOICES = [
+    STATUS_CHOICES: List[Tuple[str, str]] = [
         ('draft', 'Черновик'),
         ('sent', 'Отправлен'),
         ('paid', 'Оплачен'),
@@ -26,5 +27,6 @@ class Invoice(models.Model):
         verbose_name_plural = "Счета"
         ordering = ['-created_at', '-id']
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return a formatted string representation of the invoice"""
         return f"Счёт {self.number} — {self.project.name}"

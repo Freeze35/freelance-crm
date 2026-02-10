@@ -1,10 +1,9 @@
-# Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .forms import InvoiceForm
 from projects.models import Project
 from datetime import timedelta
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from django.utils import timezone
@@ -17,22 +16,28 @@ from celery import shared_task
 from invoices.models import Invoice
 from django.test import RequestFactory
 from tasks.tasks import send_telegram
-from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404
+from typing import Union, Optional, Any, Dict
 
-def invoice_create_from_project(request, project_id):
-    project = get_object_or_404(Project, pk=project_id)
+# Type alias for standard view responses
+ViewResponse = Union[HttpResponse, Any]
+
+
+def invoice_create_from_project(request: HttpRequest, project_id: int) -> ViewResponse:
+    """Handle invoice creation based on a specific project."""
+    project: Project = get_object_or_404(Project, pk=project_id)
 
     if request.method == 'POST':
-        form = InvoiceForm(request.POST)
+        form: InvoiceForm = InvoiceForm(request.POST)
         if form.is_valid():
-            invoice = form.save(commit=False)
+            invoice: Invoice = form.save(commit=False)
             invoice.project = project
-            # Automatic account number (INV-year-sequential number)
-            last_invoice = Invoice.objects.filter(project=project).order_by('-id').first()
-            next_num = 1 if not last_invoice else int(last_invoice.number.split('-')[-1]) + 1
+
+            # Generate sequential invoice number
+            last_invoice: Optional[Invoice] = Invoice.objects.filter(project=project).order_by('-id').first()
+            next_num: int = 1 if not last_invoice else int(last_invoice.number.split('-')[-1]) + 1
             invoice.number = f"INV-{timezone.now().year}-{next_num:03d}"
+
             invoice.save()
             messages.success(request, f'Счёт {invoice.number} успешно создан!')
             return redirect('projects:detail', pk=project.pk)
@@ -48,50 +53,51 @@ def invoice_create_from_project(request, project_id):
     })
 
 
-def generate_invoice_pdf(request, invoice_id):
-    invoice = get_object_or_404(Invoice, pk=invoice_id)
+def generate_invoice_pdf(request: HttpRequest, invoice_id: int) -> HttpResponse:
+    """Generate and return a PDF document for the given invoice."""
+    invoice: Invoice = get_object_or_404(Invoice, pk=invoice_id)
 
-    # Logo
-    logo_path = os.path.join(settings.BASE_DIR, 'static', 'logo.png')
-    logo_base64 = ""
+    # Logo processing
+    logo_path: str = os.path.join(settings.BASE_DIR, 'static', 'logo.png')
+    logo_base64: str = ""
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as image_file:
             logo_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 
-    # QR CODE GENERATOR
-    # Here you can encrypt the payment link or SBP details
-    qr_data = f"ST00012|Name=ИП Иванов И.И.|PersonalAcc=40802810400000001234|BankName=Сбербанк|BIC=044525974|CorrespAcc=30101810145250000974|Sum={int(invoice.amount * 100)}"
-
-    qr_engine = qrcode.QRCode(version=1, box_size=10, border=5)
+    # QR Code generation for payment
+    qr_data: str = f"ST00012|Name=ИП Иванов И.И.|PersonalAcc=40802810400000001234|BankName=Сбербанк|Sum={int(invoice.amount * 100)}"
+    qr_engine: qrcode.QRCode = qrcode.QRCode(version=1, box_size=10, border=5)
     qr_engine.add_data(qr_data)
     qr_engine.make(fit=True)
-    qr = qr_engine.make_image(fill_color="black", back_color="white")
-    qr_buffer = BytesIO()
-    qr.save(qr_buffer, format="PNG")
-    qr_code_base64 = base64.b64encode(qr_buffer.getvalue()).decode('utf-8')
 
-    html_string = render_to_string('invoices/pdf_invoice.html', {
+    qr_img: Any = qr_engine.make_image(fill_color="black", back_color="white")
+    qr_buffer: BytesIO = BytesIO()
+    qr_img.save(qr_buffer, format="PNG")
+    qr_code_base64: str = base64.b64encode(qr_buffer.getvalue()).decode('utf-8')
+
+    html_string: str = render_to_string('invoices/pdf_invoice.html', {
         'invoice': invoice,
         'now': timezone.now(),
         'logo_base64': logo_base64,
         'qr_code_base64': qr_code_base64,
     })
 
-    html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
-    pdf = html.write_pdf()
+    html: HTML = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
+    pdf_content: bytes = html.write_pdf()
 
-    response = HttpResponse(content_type='application/pdf')
+    response: HttpResponse = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="invoice_{invoice.number}.pdf"'
-    response.write(pdf)
+    response.write(pdf_content)
     return response
 
 
-def invoice_update(request, pk):
-    invoice = get_object_or_404(Invoice, pk=pk)
-    project = invoice.project
+def invoice_update(request: HttpRequest, pk: int) -> ViewResponse:
+    """Update an existing invoice."""
+    invoice: Invoice = get_object_or_404(Invoice, pk=pk)
+    project: Project = invoice.project
 
     if request.method == 'POST':
-        form = InvoiceForm(request.POST, instance=invoice)
+        form: InvoiceForm = InvoiceForm(request.POST, instance=invoice)
         if form.is_valid():
             form.save()
             messages.success(request, f'Счёт {invoice.number} обновлён!')
@@ -105,26 +111,29 @@ def invoice_update(request, pk):
         'project': project,
     })
 
+
 @require_POST
-def invoice_delete(request, pk):
-    invoice = get_object_or_404(Invoice, pk=pk)
-    project_pk = invoice.project.pk  # запоминаем проект для редиректа
+def invoice_delete(request: HttpRequest, pk: int) -> ViewResponse:
+    """Delete an invoice and redirect back to the project detail."""
+    invoice: Invoice = get_object_or_404(Invoice, pk=pk)
+    project_pk: int = invoice.project.pk
     invoice.delete()
     messages.success(request, f'Счёт {invoice.number} успешно удалён.')
     return redirect('projects:detail', pk=project_pk)
 
+
 @shared_task
-def send_invoice_to_telegram(invoice_id: int, chat_id: int | str):
+def send_invoice_to_telegram(invoice_id: int, chat_id: Union[int, str]) -> str:
+    """Background task to send invoice PDF to Telegram."""
     try:
-        invoice = Invoice.objects.get(id=invoice_id)
+        invoice: Invoice = Invoice.objects.get(id=invoice_id)
 
-        # Generate PDF in memory
-        factory = RequestFactory()
-        fake_request = factory.get('/')
-        pdf_response = generate_invoice_pdf(fake_request, invoice_id)
-        pdf_bytes = pdf_response.content
+        factory: RequestFactory = RequestFactory()
+        fake_request: HttpRequest = factory.get('/')
+        pdf_response: HttpResponse = generate_invoice_pdf(fake_request, invoice_id)
+        pdf_bytes: bytes = pdf_response.content
 
-        caption = (
+        caption: str = (
             f"<b>Счёт №{invoice.number}</b>\n"
             f"Сумма: {invoice.amount} ₽\n"
             f"Проект: {invoice.project.name}\n"
@@ -132,44 +141,41 @@ def send_invoice_to_telegram(invoice_id: int, chat_id: int | str):
             f"Статус: {invoice.get_status_display()}"
         )
 
-
-        result = send_telegram.run(
+        result: str = send_telegram.run(
             chat_id=chat_id,
             document_bytes=pdf_bytes,
             filename=f"счёт_{invoice.number}.pdf",
             caption=caption
         )
-
         return result
 
     except Invoice.DoesNotExist:
-        return f"Счёт {invoice_id} не найден"
+        return f"Invoice {invoice_id} not found"
     except Exception as e:
-        return f"Ошибка: {str(e)}"
+        return f"Error: {str(e)}"
 
 
 @require_POST
-def send_invoice_telegram(request, pk):
-    invoice = get_object_or_404(Invoice, pk=pk)
-    client_chat_id = invoice.project.client.telegram_chat_id
+def send_invoice_telegram(request: HttpRequest, pk: int) -> JsonResponse:
+    """Trigger the background task to send an invoice via Telegram."""
+    invoice: Invoice = get_object_or_404(Invoice, pk=pk)
+    client_chat_id: Optional[str] = invoice.project.client.telegram_chat_id
 
     if client_chat_id:
-        chat_id = client_chat_id
-        recipient = "клиенту"
+        chat_id: Union[str, int] = client_chat_id
+        recipient: str = "клиенту"
     else:
         chat_id = getattr(settings, 'TELEGRAM_CHAT_ID', None)
         recipient = "администратору"
 
     if not chat_id:
         return JsonResponse({
-            'status': 'error', # Добавили статус ошибки
+            'status': 'error',
             'message': 'ID чата не найден'
         }, status=400)
 
-    # Запускаем задачу
     send_invoice_to_telegram.delay(invoice.pk, chat_id)
 
-    # ВАЖНО: Добавляем 'status': 'success'
     return JsonResponse({
         'status': 'success',
         'message': f'Счёт успешно отправлен {recipient}'
