@@ -8,7 +8,8 @@
 
 CRUD + PDF + Telegram-уведомления
 
-## 🚀 [Демо версия](https://freelance-crm.koyeb.app/)
+## 🚀 [Демо версия freelance-crm-onrender](https://freelance-crm-1.onrender.com/)
+## 🚀 [Демо версия freelance-crm.koyeb](https://freelance-crm.koyeb.app/)
 
 ## Основной функционал
 
