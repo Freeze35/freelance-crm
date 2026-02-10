@@ -1,10 +1,14 @@
 # Freelance CRM [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+
+
 <img src="static/logo.png" alt="Логотип" width="80" align="left">
 
 Простая и удобная система для фрилансеров: управление проектами, задачами и счетами + автоматическая отправка счетов клиентам в Telegram.
 
 CRUD + PDF + Telegram-уведомления
+
+## 🚀 [Демо версия](https://freelance-crm.koyeb.app/)
 
 ## Основной функционал
 
