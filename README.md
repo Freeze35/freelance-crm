@@ -51,7 +51,7 @@ _Как выглядит Telegram-счёт у клиента_
 - Backend: Django 5.2+
 - Frontend: Tailwind CSS 2.2 + HTMX 1.9
 - Асинхронные задачи: Celery + Redis
-- База данных: PostgreSQL (Neo)
+- База данных: SQLite (local) + PostgreSQL (Neon(Cloud))
 - Уведомления и отправка файлов: Telegram Bot API
 - Генерация PDF: WeasyPrint
 - Управление задачами: taskipy
