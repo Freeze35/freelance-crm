@@ -21,6 +21,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
 from django.contrib.staticfiles import finders
+import io
 
 def invoice_create_from_project(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -121,12 +122,13 @@ def send_invoice_to_telegram(invoice_id: int, chat_id: int | str):
     try:
         invoice = Invoice.objects.get(id=invoice_id)
 
-        # Generate PDF in memory
+        # 1. Generate PDF via an existing view
         factory = RequestFactory()
         fake_request = factory.get('/')
         pdf_response = generate_invoice_pdf(fake_request, invoice_id)
         pdf_bytes = pdf_response.content
 
+        # 2. Preparing the text
         caption = (
             f"<b>Счёт №{invoice.number}</b>\n"
             f"Сумма: {invoice.amount} ₽\n"
@@ -135,11 +137,15 @@ def send_invoice_to_telegram(invoice_id: int, chat_id: int | str):
             f"Статус: {invoice.get_status_display()}"
         )
 
+        # 3. CRITICAL CHANGE:
+        # Wrap bytes in a "virtual file" that the sending library will understand
+        pdf_file = io.BytesIO(pdf_bytes)
+        pdf_file.name = f"invoice_{invoice.number}.pdf"
 
+        # 4. Sending via the send_telegram function
         result = send_telegram.run(
             chat_id=chat_id,
-            document_bytes=pdf_bytes,
-            filename=f"счёт_{invoice.number}.pdf",
+            document=pdf_file,
             caption=caption
         )
 
@@ -148,7 +154,7 @@ def send_invoice_to_telegram(invoice_id: int, chat_id: int | str):
     except Invoice.DoesNotExist:
         return f"Счёт {invoice_id} не найден"
     except Exception as e:
-        return f"Ошибка: {str(e)}"
+        return f"Ошибка при отправке: {str(e)}"
 
 
 @require_POST
