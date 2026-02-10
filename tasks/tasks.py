@@ -1,85 +1,104 @@
 import requests
 from django.conf import settings
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, date
 from celery import shared_task
 from .models import Task
+from django.db.models import QuerySet
+from typing import Dict, List, Optional, Union, Any
 
 
 @shared_task
-def send_telegram_notifications():
-    now = timezone.now().date()
-    tomorrow = now + timedelta(days=1)
+def send_telegram_notifications() -> str:
+    """Identify overdue and upcoming tasks and send a summary report to Telegram."""
+    now: date = timezone.now().date()
+    tomorrow: date = now + timedelta(days=1)
 
-    overdue = Task.objects.filter(deadline__lt=now).exclude(status='completed').select_related('project')
-    upcoming = Task.objects.filter(deadline=tomorrow).exclude(status='completed').select_related('project')
+    # Note: Using 'completed' instead of 'done' based on your provided task logic
+    overdue: QuerySet[Task] = Task.objects.filter(deadline__lt=now).exclude(status='completed').select_related(
+        'project')
+    upcoming: QuerySet[Task] = Task.objects.filter(deadline=tomorrow).exclude(status='completed').select_related(
+        'project')
 
     if not overdue.exists() and not upcoming.exists():
         return "No tasks to notify"
 
-    message = "📊 *CRM REPORT* 📊\n"
+    message: str = "📊 *CRM REPORT* 📊\n"
     message += "—" * 15 + "\n\n"
 
-    def format_section(tasks, title_emoji, section_name):
+    def format_section(tasks: QuerySet[Task], title_emoji: str, section_name: str) -> str:
+        """Helper to group tasks by project and format the text section."""
         if not tasks.exists():
             return ""
 
-        section_text = f"{title_emoji} *{section_name}*\n"
+        section_text: str = f"{title_emoji} *{section_name}*\n"
 
-        # Group tasks by projects in the dictionary
-        projects = {}
+        # Group tasks by projects
+        projects_map: Dict[str, List[Task]] = {}
         for task in tasks:
-            project_name = task.project.name if task.project else "Без проекта"
-            if project_name not in projects:
-                projects[project_name] = []
-            projects[project_name].append(task)
+            project_name: str = task.project.name if task.project else "Без проекта"
+            if project_name not in projects_map:
+                projects_map[project_name] = []
+            projects_map[project_name].append(task)
 
-        # Collect text from grouped data
-        for project, task_list in projects.items():
+        # Build formatted text from mapping
+        for project, task_list in projects_map.items():
             section_text += f"\n📁 _Project: {project}_\n"
             for t in task_list:
-                section_text += f" • {t.title} (`{t.deadline.strftime('%d.%m.%Y')}`)\n"
+                deadline_str: str = t.deadline.strftime('%d.%m.%Y') if t.deadline else "No deadline"
+                section_text += f" • {t.title} (`{deadline_str}`)\n"
 
         return section_text + "\n"
 
     message += format_section(overdue, "🔴", "ПРОСРОЧЕНО")
     message += format_section(upcoming, "🟡", "КРАЙНИЙ СРОК ЗАВТРА")
 
-    url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
+    url: str = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload: Dict[str, Any] = {
         "chat_id": settings.TELEGRAM_CHAT_ID,
         "text": message,
         "parse_mode": "Markdown"
     }
 
     try:
-        response = requests.post(url, json=payload, timeout=10)
+        response: requests.Response = requests.post(url, json=payload, timeout=10)
         response.raise_for_status()
         return "Success"
     except Exception as e:
         return f"Error: {str(e)}"
 
+
 @shared_task
-def send_telegram(chat_id: int | str, text: str = None, document_bytes: bytes = None, filename: str = None, caption: str = None):
+def send_telegram(
+        chat_id: Union[int, str],
+        text: Optional[str] = None,
+        document_bytes: Optional[bytes] = None,
+        filename: Optional[str] = None,
+        caption: Optional[str] = None
+) -> str:
     """
-    Одна задача для всех отправок в Telegram:
-    - text → отправляет сообщение
-    - document_bytes → отправляет файл (PDF, фото и т.д.)
+    Unified task for Telegram messaging:
+    - Sends text messages via sendMessage
+    - Sends files (PDF, images) via sendDocument
     """
-    base_url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/"
+    base_url: str = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/"
 
     try:
         if document_bytes:
-            url = base_url + "sendDocument"
-            files = {'document': (filename or 'file.pdf', document_bytes, 'application/pdf')}
-            data = {'chat_id': chat_id}
+            url: str = base_url + "sendDocument"
+            files: Dict[str, Any] = {
+                'document': (filename or 'file.pdf', document_bytes, 'application/pdf')
+            }
+            data: Dict[str, Any] = {'chat_id': chat_id}
             if caption:
                 data['caption'] = caption
+                # Using HTML for caption if explicitly requested via structure
                 data['parse_mode'] = 'HTML'
-            response = requests.post(url, data=data, files=files, timeout=15)
+
+            response: requests.Response = requests.post(url, data=data, files=files, timeout=15)
         else:
             url = base_url + "sendMessage"
-            payload = {
+            payload: Dict[str, Any] = {
                 'chat_id': chat_id,
                 'text': text or 'Сообщение без текста',
                 'parse_mode': 'HTML' if caption else 'Markdown'

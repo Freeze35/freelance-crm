@@ -1,9 +1,11 @@
 from django.db import models
 from projects.models import Project
 from django.utils import timezone
+from typing import List, Tuple, Optional
+from datetime import date
 
 class Task(models.Model):
-    STATUS_CHOICES = [
+    STATUS_CHOICES: List[Tuple[str, str]] = [
         ('todo', 'К выполнению'),
         ('in_progress', 'В работе'),
         ('done', 'Завершена'),
@@ -22,9 +24,16 @@ class Task(models.Model):
         verbose_name_plural = "Задачи"
         ordering = ['deadline', '-created_at']
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return the task title and its associated project name"""
         return f"{self.title} ({self.project})"
 
     @property
-    def is_overdue(self):
-        return self.deadline and self.deadline < timezone.now().date() and self.status != 'done'
+    def is_overdue(self) -> bool:
+        """Check if the task is past its deadline and not yet completed"""
+        current_date: date = timezone.now().date()
+        return bool(
+            self.deadline and
+            self.deadline < current_date and
+            self.status != 'done'
+        )

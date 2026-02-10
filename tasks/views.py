@@ -1,17 +1,23 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.http import HttpRequest, HttpResponse
 from .models import Task
 from .forms import TaskForm
 from projects.models import Project
 from django.views.decorators.http import require_POST
+from typing import Union, Any
 
-def task_create(request, project_id):
-    project = get_object_or_404(Project, pk=project_id)
+# Type alias for standard view responses
+ViewResponse = Union[HttpResponse, Any]
+
+def task_create(request: HttpRequest, project_id: int) -> ViewResponse:
+    """Handle the creation of a new task associated with a specific project."""
+    project: Project = get_object_or_404(Project, pk=project_id)
 
     if request.method == 'POST':
-        form = TaskForm(request.POST)
+        form: TaskForm = TaskForm(request.POST)
         if form.is_valid():
-            task = form.save(commit=False)
+            task: Task = form.save(commit=False)
             task.project = project
             task.save()
             messages.success(request, f'Задача "{task.title}" добавлена к проекту "{project.name}"!')
@@ -24,12 +30,13 @@ def task_create(request, project_id):
         'project': project
     })
 
-def task_update(request, pk):  # ← меняем task_id → pk
-    task = get_object_or_404(Task, pk=pk)
-    project = task.project
+def task_update(request: HttpRequest, pk: int) -> ViewResponse:
+    """Update an existing task and redirect back to the project detail view."""
+    task: Task = get_object_or_404(Task, pk=pk)
+    project: Project = task.project
 
     if request.method == 'POST':
-        form = TaskForm(request.POST, instance=task)
+        form: TaskForm = TaskForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
             messages.success(request, f'Задача "{task.title}" обновлена!')
@@ -43,15 +50,17 @@ def task_update(request, pk):  # ← меняем task_id → pk
         'project': project
     })
 
-def task_detail(request, pk):
-    task = get_object_or_404(Task, pk=pk)
+def task_detail(request: HttpRequest, pk: int) -> ViewResponse:
+    """Display the details of a specific task."""
+    task: Task = get_object_or_404(Task, pk=pk)
     return render(request, 'tasks/detail.html', {'task': task})
 
 @require_POST
-def task_delete(request, pk):
-    task = get_object_or_404(Task, pk=pk)
-    project_pk = task.project.pk
-    task_title = task.title
+def task_delete(request: HttpRequest, pk: int) -> ViewResponse:
+    """Delete a task via POST request and redirect to the parent project."""
+    task: Task = get_object_or_404(Task, pk=pk)
+    project_pk: int = task.project.pk
+    task_title: str = task.title
     task.delete()
     messages.success(request, f'Задача "{task_title}" успешно удалена.')
     return redirect('projects:detail', pk=project_pk)
