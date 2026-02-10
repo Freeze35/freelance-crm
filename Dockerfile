@@ -1,30 +1,24 @@
 FROM python:3.11-slim
 
-# System dependencies for WeasyPrint and Supervisor
+# Системные зависимости для WeasyPrint и Redis-клиента
 RUN apt-get update && apt-get install -y \
-libpango-1.0-0 \
-libpangocairo-1.0-0 \
-libgdk-pixbuf-2.0-0 \
-libffi-dev \
-libjpeg-dev \
-libwebp-dev \
-supervisor \
-&& apt-get clean && rm -rf /var/lib/apt/lists/*
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    libffi-dev \
+    redis-server \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Create a user (required for HF)
-RUN useradd -m -u 1000 user
-USER user
-ENV PATH="/home/user/.local/bin:${PATH}"
-ENV PYTHONUNBUFFERED=1
-
-WORKDIR /home/user/app
-
-COPY --chown=user requirements.txt .
+WORKDIR /app
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY --chown=user . .
+COPY . .
 
-EXPOSE 7860
+# Даем права на выполнение скрипту запуска
+RUN chmod +x start.sh
 
-# Run via supervisor (don't forget to create supervisord.conf in the root directory!)
-CMD ["supervisord", "-c", "supervisord.conf"]
+# Открываем порт для Django
+EXPOSE 8000
+
+CMD ["./start.sh"]
