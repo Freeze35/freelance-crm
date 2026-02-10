@@ -132,3 +132,14 @@ TELEGRAM_CHAT_ID = env('TELEGRAM_CHAT_ID', default='')
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+import sys
+
+# If tests are running, switch to a fast SQLite database
+if 'test' in sys.argv or 'pytest' in sys.modules:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }

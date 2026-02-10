@@ -28,20 +28,24 @@ class ClientForm(forms.ModelForm):
         if not phone:
             return phone
 
+        # We leave only numbers
         digits = ''.join(filter(str.isdigit, phone))
 
+        # 1. Converting to format 7...
         if digits.startswith('8'):
             digits = '7' + digits[1:]
-        elif digits.startswith('7'):
-            pass
         elif len(digits) == 10:
             digits = '7' + digits
-        else:
-            raise forms.ValidationError("Номер должен содержать 10 цифр после кода страны")
 
+        # 2. Checking the length
         if len(digits) != 11:
             raise forms.ValidationError("Номер должен содержать ровно 11 цифр (включая 7)")
 
+        #3. Check the format (must start with 7)
+        if not digits.startswith('7'):
+            raise forms.ValidationError("Номер должен начинаться с 7 или 8")
+
+        # 4. Checking uniqueness
         if Client.objects.filter(phone=digits).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError("Этот номер телефона уже используется")
 
