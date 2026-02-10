@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'projects',
     'tasks',
     'invoices',
-    'notifications',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"

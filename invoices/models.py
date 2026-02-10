@@ -24,7 +24,7 @@ class Invoice(models.Model):
     class Meta:
         verbose_name = "Счёт"
         verbose_name_plural = "Счета"
-        ordering = ['-created_at']
+        ordering = ['-created_at', '-id']
 
     def __str__(self):
         return f"Счёт {self.number} — {self.project.name}"
