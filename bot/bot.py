@@ -3,25 +3,28 @@ import django
 import asyncio
 import logging
 import sys
+import re
+from typing import Optional, List, Dict, Any, Tuple, Final
 
 # ────────────────────────────────────────────────
 # Initializing Django
 # ────────────────────────────────────────────────
-# 1. Find the path to the project root (one folder above the bot folder)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# 2. Add the project root to the Python module search path
+# Calculate the project root path
+BASE_DIR: Final[str] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Append project root to sys.path for module resolution
 if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 
-# 3. Set the environment variable for Django
+# Configure Django settings module environment variable
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'crm.settings')
 
-# 4. Initialize Django
+# Initialize Django ORM and applications
 django.setup()
 
 from clients.models import Client
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -29,31 +32,32 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from django.conf import settings
 from asgiref.sync import sync_to_async
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
-from aiogram import F
-import re
+from aiogram.types import BotCommand, BotCommandScopeDefault
 
+# Setup basic logging configuration
 logging.basicConfig(level=logging.INFO)
 
-bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
-dp = Dispatcher(storage=MemoryStorage())
+# Initialize Bot and Dispatcher with memory storage
+bot: Bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+dp: Dispatcher = Dispatcher(storage=MemoryStorage())
 
 
 class RegisterForm(StatesGroup):
-    organization = State()
-    inn = State()
-    email = State()
+    organization: State = State()
+    inn: State = State()
+    email: State = State()
 
 
 @dp.message(F.text == "📝 Регистрация")
-async def btn_registration(message: types.Message, state: FSMContext):
+async def btn_registration(message: types.Message, state: FSMContext) -> None:
     await cmd_registration(message, state)
 
 
 @dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    builder = ReplyKeyboardBuilder()
+async def cmd_start(message: types.Message) -> None:
+    builder: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
     builder.button(text="📝 Регистрация")
-    builder.adjust(1)  # Full-width button
+    builder.adjust(1)
 
     await message.answer(
         "Привет! 👋\n"
@@ -68,7 +72,7 @@ async def cmd_start(message: types.Message):
 
 
 @dp.message(Command("registration", "reg"))
-async def cmd_registration(message: types.Message, state: FSMContext):
+async def cmd_registration(message: types.Message, state: FSMContext) -> None:
     await message.answer(
         "Отлично, начинаем регистрацию! 📝\n\n"
         "Напиши название организации (или ФИО, если ИП):"
@@ -77,25 +81,34 @@ async def cmd_registration(message: types.Message, state: FSMContext):
 
 
 @dp.message(RegisterForm.organization)
-async def process_organization(message: types.Message, state: FSMContext):
-    text = message.text.strip()
+async def process_organization(message: types.Message, state: FSMContext) -> None:
+    raw_text: Optional[str] = message.text
+    if not raw_text:
+        return
+
+    text: str = raw_text.strip()
     if not text:
         await message.answer("Название организации не может быть пустым. Попробуй ещё раз:")
         return
+
     await state.update_data(organization=text)
     await message.answer("Отлично! Теперь ИНН или ОГРН:")
     await state.set_state(RegisterForm.inn)
 
 
 @dp.message(RegisterForm.inn)
-async def process_inn(message: types.Message, state: FSMContext):
-    inn = message.text.strip()
+async def process_inn(message: types.Message, state: FSMContext) -> None:
+    raw_inn: Optional[str] = message.text
+    if not raw_inn:
+        return
 
-    # Check: only numbers and length 10 or 12 characters
+    inn: str = raw_inn.strip()
+
+    # Validate that INN contains only digits and has a proper length
     if not inn.isdigit() or len(inn) not in [10, 12]:
         await message.answer(
             "⚠️ Некорректный ИНН.\n"
-            "ИНН должен состоять только из цифр и иметь длину 10 (для организаций) или 12 (для ИП) символов.\n"
+            "ИНН должен состоять только из цифр и иметь длину 10 или 12 символов.\n"
             "Попробуйте ещё раз:"
         )
         return
@@ -109,38 +122,39 @@ async def process_inn(message: types.Message, state: FSMContext):
 
 
 @dp.message(RegisterForm.email)
-async def process_email(message: types.Message, state: FSMContext):
-    email_raw = message.text.strip()
+async def process_email(message: types.Message, state: FSMContext) -> None:
+    raw_input: Optional[str] = message.text
+    if not raw_input:
+        return
 
-    # 1 List of phrases we consider "skip"
-    skip_options = ["-", "пропустить", "нет", "не нужно", "skip", "none", "обойдусь"]
+    email_raw: str = raw_input.strip()
+    skip_options: List[str] = ["-", "пропустить", "нет", "не нужно", "skip", "none", "обойдусь"]
 
-    # 2. Email Verification Logic
-    if email_raw.lower() in skip_options:
-        email = None
-        email_text = "не указан (копии на почту не будут приходить)"
-    else:
-        email_pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    email: Optional[str] = None
+    email_text: str = "не указан (копии на почту не будут приходить)"
+
+    # Check if the user chose to skip email registration
+    if email_raw.lower() not in skip_options:
+        email_pattern: str = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 
         if not re.match(email_pattern, email_raw):
             await message.answer(
                 "⚠️ **Ошибка в формате email.**\n\n"
-                "Пожалуйста, введите корректный адрес (например: example@mail.ru) "
-                "или напишите слово «пропустить»:"
+                "Пожалуйста, введите корректный адрес или напишите слово «пропустить»:"
             )
             return
 
         email = email_raw
         email_text = email
 
-    # 3. Extracting accumulated data from FSM
-    user_data = await state.get_data()
-    organization = user_data.get('organization')
-    inn = user_data.get('inn')
+    # Retrieve accumulated data from FSM storage
+    user_data: Dict[str, Any] = await state.get_data()
+    organization: str = user_data.get('organization', 'Unknown')
+    inn: str = user_data.get('inn', '')
 
-    # 4. Saving to Django Database via sync_to_async
     try:
-        client, created = await sync_to_async(Client.objects.update_or_create)(
+        # Save or update client data in the Django database
+        db_result: Tuple[Client, bool] = await sync_to_async(Client.objects.update_or_create)(
             inn=inn,
             defaults={
                 'name': organization,
@@ -148,11 +162,11 @@ async def process_email(message: types.Message, state: FSMContext):
                 'telegram_chat_id': str(message.chat.id),
             }
         )
+        client, created = db_result
 
-        status_text = "успешно зарегистрирован" if created else "ваши данные обновлены"
+        status_text: str = "успешно зарегистрирован" if created else "ваши данные обновлены"
 
-        # 5. Final response to the user
-        response = (
+        response: str = (
             f"Готово! 🎉\n\n"
             f"Вы {status_text}:\n"
             f"🏢 **Организация:** {organization}\n"
@@ -162,35 +176,31 @@ async def process_email(message: types.Message, state: FSMContext):
             f"Ваш ID в системе: `{client.id}`"
         )
 
-        # Remove the keyboard (Registration button), as it is no longer needed
         await message.answer(response, reply_markup=types.ReplyKeyboardRemove())
-        await state.clear()  # Clear the state after successful completion
+        await state.clear()
 
     except Exception as e:
-        logging.error(f"Ошибка при сохранении клиента: {e}")
-        await message.answer("❌ Произошла ошибка при сохранении данных. Попробуйте позже или обратитесь в поддержку.")
+        logging.error(f"Error saving client to database: {e}")
+        await message.answer("❌ Произошла ошибка при сохранении данных.")
 
 
-from aiogram.types import BotCommand, BotCommandScopeDefault
-
-
-async def set_commands(bot: Bot):
-    commands = [
+async def set_commands(bot: Bot) -> None:
+    """Set up the bot's command menu for the UI"""
+    commands: List[BotCommand] = [
         BotCommand(command="start", description="Запустить бота и получить справку"),
         BotCommand(command="registration", description="Зарегистрироваться или обновить данные"),
     ]
-
-    # Set up commands for all users
     await bot.set_my_commands(commands, scope=BotCommandScopeDefault())
 
 
-async def main():
-    # Customizing the command menu
+async def main() -> None:
+    """Main entry point for the bot application"""
     await set_commands(bot)
-
-    # Launch the bot
     await dp.start_polling(bot)
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logging.info("Bot execution interrupted by user")
