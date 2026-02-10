@@ -19,3 +19,11 @@ setup = "python manage.py migrate && python manage.py runserver"
 
 # Start bot (So that clients can write to the bot and register.)
 bot = "python bot/bot.py"
+
+# Tests detailed conclusion
+test_v = "pytest -v"
+
+# Tests with coverage
+test_coverage = "pytest --cov=. --cov-report=term-missing"
+
+

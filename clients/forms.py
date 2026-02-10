@@ -5,12 +5,11 @@ from .models import Client
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
-        # 1. Добавляем поле в список
+
         fields = ['name', 'email', 'phone', 'notes', 'telegram_chat_id']
 
         common_classes = 'w-full px-4 py-2 border-2 border-blue-600 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition-all'
 
-        # 2. Настраиваем виджеты именно для модели КЛИЕНТА
         widgets = {
             'name': forms.TextInput(attrs={'class': common_classes, 'placeholder': 'Имя или Название компании'}),
             'email': forms.EmailInput(attrs={'class': common_classes, 'placeholder': 'example@mail.com'}),

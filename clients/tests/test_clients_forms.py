@@ -32,10 +32,10 @@ class TestClientForm:
 
     def test_duplicate_phone_validation(self):
         "Checking the uniqueness of a phone number in a form"""
-        # Создаем клиента в базе
+        # Create a client in the database
         Client.objects.create(name="Existing", phone="79990000000")
 
-        # Пытаемся создать через форму такого же
+        # We are trying to create the same through the form
         form = ClientForm(data={'name': 'New', 'phone': '89990000000'})
 
         assert not form.is_valid()

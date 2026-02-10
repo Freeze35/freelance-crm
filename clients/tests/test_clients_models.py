@@ -15,7 +15,7 @@ class TestClientModel:
     def test_formatted_phone_11_digits(self):
         """Checking phone formatting when entering 11 digits"""
         client = Client.objects.create(name="Иван", phone="89005553535")
-        # Ожидаем: +7 900 555 3535
+        # We are waiting: +7 900 555 3535
         assert client.formatted_phone == "+7 900 555 3535"
 
     def test_formatted_phone_short_number(self):
@@ -30,17 +30,17 @@ class TestClientModel:
 
     def test_ordering(self):
         """Ensure that new clients are listed first (sorting)"""
-        # Создаем первого клиента чуть раньше
+        # Let's create the first client a little earlier
         c1 = Client.objects.create(name="Первый")
         c1.created_at = timezone.now() - timedelta(days=1)
         c1.save()
 
-        # Создаем второго клиента сейчас
+        # We are creating a second client now.
         c2 = Client.objects.create(name="Второй")
 
         clients = Client.objects.all()
 
-        # Теперь c2 гарантированно новее, чем c1
+        # Now c2 is guaranteed to be newer than c1
         assert clients[0] == c2
         assert clients[1] == c1
 
