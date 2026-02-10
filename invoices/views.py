@@ -62,7 +62,10 @@ def generate_invoice_pdf(request, invoice_id):
     # Here you can encrypt the payment link or SBP details
     qr_data = f"ST00012|Name=ИП Иванов И.И.|PersonalAcc=40802810400000001234|BankName=Сбербанк|BIC=044525974|CorrespAcc=30101810145250000974|Sum={int(invoice.amount * 100)}"
 
-    qr = qrcode.make(qr_data)
+    qr_engine = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr_engine.add_data(qr_data)
+    qr_engine.make(fit=True)
+    qr = qr_engine.make_image(fill_color="black", back_color="white")
     qr_buffer = BytesIO()
     qr.save(qr_buffer, format="PNG")
     qr_code_base64 = base64.b64encode(qr_buffer.getvalue()).decode('utf-8')
