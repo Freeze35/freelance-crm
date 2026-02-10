@@ -1,6 +1,6 @@
 name: CI Tests
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   test:
@@ -22,3 +22,6 @@ jobs:
 
       - name: Run Pytest
         run: pytest
+        env:
+          PYTHONPATH: .
+          DJANGO_SETTINGS_MODULE: crm.settings
