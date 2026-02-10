@@ -20,8 +20,6 @@ from tasks.tasks import send_telegram
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
-from django.contrib.staticfiles import finders
-import io
 
 def invoice_create_from_project(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -53,22 +51,21 @@ def invoice_create_from_project(request, project_id):
 def generate_invoice_pdf(request, invoice_id):
     invoice = get_object_or_404(Invoice, pk=invoice_id)
 
-    # ЛОГОТИП: Используем finders, чтобы найти файл и в разработке, и в деплое
-    logo_path = finders.find('logo.png')
+    # Logo
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'logo.png')
     logo_base64 = ""
-
-    if logo_path and os.path.exists(logo_path):
+    if os.path.exists(logo_path):
         with open(logo_path, "rb") as image_file:
             logo_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 
-    # QR CODE GENERATOR (твой обновленный код — он теперь верный)
+    # QR CODE GENERATOR
+    # Here you can encrypt the payment link or SBP details
     qr_data = f"ST00012|Name=ИП Иванов И.И.|PersonalAcc=40802810400000001234|BankName=Сбербанк|BIC=044525974|CorrespAcc=30101810145250000974|Sum={int(invoice.amount * 100)}"
 
     qr_engine = qrcode.QRCode(version=1, box_size=10, border=5)
     qr_engine.add_data(qr_data)
     qr_engine.make(fit=True)
     qr = qr_engine.make_image(fill_color="black", back_color="white")
-
     qr_buffer = BytesIO()
     qr.save(qr_buffer, format="PNG")
     qr_code_base64 = base64.b64encode(qr_buffer.getvalue()).decode('utf-8')
@@ -80,7 +77,6 @@ def generate_invoice_pdf(request, invoice_id):
         'qr_code_base64': qr_code_base64,
     })
 
-    # Для PDF важно указать base_url, чтобы WeasyPrint понимал относительные пути
     html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
     pdf = html.write_pdf()
 
@@ -122,13 +118,12 @@ def send_invoice_to_telegram(invoice_id: int, chat_id: int | str):
     try:
         invoice = Invoice.objects.get(id=invoice_id)
 
-        # 1. Generate PDF via an existing view
+        # Generate PDF in memory
         factory = RequestFactory()
         fake_request = factory.get('/')
         pdf_response = generate_invoice_pdf(fake_request, invoice_id)
         pdf_bytes = pdf_response.content
 
-        # 2. Preparing the text
         caption = (
             f"<b>Счёт №{invoice.number}</b>\n"
             f"Сумма: {invoice.amount} ₽\n"
@@ -137,16 +132,11 @@ def send_invoice_to_telegram(invoice_id: int, chat_id: int | str):
             f"Статус: {invoice.get_status_display()}"
         )
 
-        # 3. CRITICAL CHANGE:
-        # Wrap bytes in a "virtual file" that the sending library will understand
-        pdf_file = io.BytesIO(pdf_bytes)
-        pdf_file.name = f"invoice_{invoice.number}.pdf"
 
-        # 4. Sending via the send_telegram function
         result = send_telegram.run(
             chat_id=chat_id,
-            document_bytes=pdf_file,
-            filename=f"invoice_{invoice.number}.pdf",
+            document_bytes=pdf_bytes,
+            filename=f"счёт_{invoice.number}.pdf",
             caption=caption
         )
 
@@ -155,7 +145,7 @@ def send_invoice_to_telegram(invoice_id: int, chat_id: int | str):
     except Invoice.DoesNotExist:
         return f"Счёт {invoice_id} не найден"
     except Exception as e:
-        return f"Ошибка при отправке: {str(e)}"
+        return f"Ошибка: {str(e)}"
 
 
 @require_POST
