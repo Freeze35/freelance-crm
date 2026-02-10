@@ -1,6 +1,8 @@
 import pytest
-from django.urls import reverse, resolve
+from django.urls import reverse, resolve, ResolverMatch
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.test import Client as DjangoTestClient
+from typing import Any, Final
 
 
 @pytest.mark.django_db
@@ -13,32 +15,36 @@ class TestGlobalURLs:
         ('clients:list', 200),
         ('projects:list', 200),
     ])
-    def test_main_endpoints_accessible(self, client, url_name, expected_status):
-        """Checking the availability of all main sections by their names"""
-        url = reverse(url_name)
-        response = client.get(url)
+    def test_main_endpoints_accessible(
+            self,
+            client: DjangoTestClient,
+            url_name: str,
+            expected_status: int
+    ) -> None:
+        """Verify that main sections are accessible by their URL names"""
+        url: str = reverse(url_name)
+        response: Any = client.get(url)
         assert response.status_code == expected_status
 
-    def test_favicon_redirection(self, client):
-        """Checking that favicon.ico correctly redirects to a static file"""
-        url = '/favicon.ico'
-        response = client.get(url)
+    def test_favicon_redirection(self, client: DjangoTestClient) -> None:
+        """Verify that /favicon.ico correctly redirects to the static file"""
+        url: Final[str] = '/favicon.ico'
+        response: Any = client.get(url)
 
-        # Check that this is a redirect
         assert response.status_code == 302
-        # We check that it leads to statics
-        assert staticfiles_storage.url('favicon.ico') in response.url
 
-    def test_invalid_url_returns_404(self, client):
-        """Checking if a non-existent URL returns 404"""
-        response = client.get('/some-random-page-that-does-not-exist/')
+        expected_static_url: str = staticfiles_storage.url('favicon.ico')
+        assert expected_static_url in response.url
+
+    def test_invalid_url_returns_404(self, client: DjangoTestClient) -> None:
+        """Verify that non-existent URLs return a 404 Not Found status"""
+        response: Any = client.get('/some-random-page-that-does-not-exist/')
         assert response.status_code == 404
 
-    def test_url_resolving(self):
-        """Checking that URLs point to the correct views (Resolve)"""
-        # This ensures that the '/' path actually calls the dashboard
-        resolver = resolve('/')
+    def test_url_resolving(self) -> None:
+        """Verify that URL paths resolve to the expected view names and namespaces"""
+        resolver: ResolverMatch = resolve('/')
         assert resolver.view_name == 'dashboard'
 
-        resolver_admin = resolve('/admin/login/')
-        assert 'admin' in resolver_admin.app_name
+        resolver_admin: ResolverMatch = resolve('/admin/login/')
+        assert 'admin' in str(resolver_admin.app_name)
