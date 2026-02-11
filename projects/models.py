@@ -3,6 +3,23 @@ from clients.models import Client
 from typing import List, Tuple
 
 class Project(models.Model):
+    """
+        Represents a specific work engagement with a Client.
+
+        The Project model acts as a central hub for tasks and invoices.
+        It tracks financial goals (budget), time constraints (deadline),
+        and the current stage of the workflow.
+
+        Attributes:
+            name: The title of the project.
+            client: ForeignKey linking the project to a specific Client.
+            description: Detailed scope of work.
+            budget: Total monetary value assigned to the project.
+            status: Current phase (new, in_progress, done, canceled).
+            deadline: Targeted completion date.
+            created_at: Automatic timestamp of project initialization.
+    """
+
     STATUS_CHOICES: List[Tuple[str, str]] = [
         ('new', 'Новый'),
         ('in_progress', 'В работе'),

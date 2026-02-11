@@ -4,6 +4,16 @@ from typing import Dict, Any
 
 
 class ProjectForm(forms.ModelForm):
+    """
+        Form for creating and updating Project instances.
+
+        This form utilizes Tailwind CSS for styling and custom widgets
+        to provide a better user experience (e.g., date picker for deadlines).
+
+        Attributes:
+            Meta.fields: Includes name, client, description, budget, status, and deadline.
+            common_classes: A shared set of Tailwind CSS classes for consistent input styling.
+    """
     class Meta:
         model = Project
         fields: list[str] = ['name', 'client', 'description', 'budget', 'status', 'deadline']

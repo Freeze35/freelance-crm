@@ -32,3 +32,6 @@ nav:
   - Invoices Module:
       - Validation Tests: invoices/testing_invoices.md
       - Invoices: invoices/invoices.md
+  - Projects Module:
+      - Validation Tests: projects/testing_projects.md
+      - Invoices: projects/projects.md
