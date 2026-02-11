@@ -5,8 +5,8 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', dashboard, name='dashboard'),
+    path('admin/', admin.site.urls),
     path('projects/', include('projects.urls')),
     path('clients/', include('clients.urls')),
     path('tasks/', include('tasks.urls')),

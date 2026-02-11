@@ -26,3 +26,6 @@ nav:
   - Clients Module:
       - Validation Tests: clients/testing_clients.md
       - Clients: clients/clients.md
+  - CRM Module:
+      - Validation Tests: crm/testing_crm.md
+      - CRM: crm/crm.md
