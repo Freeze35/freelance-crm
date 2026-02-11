@@ -26,4 +26,6 @@ test_v = "pytest -v"
 # Tests with coverage
 test_coverage = "pytest --cov=. --cov-report=term-missing"
 
+# Launch webserver for documentation using mkdoks
+docks = "mkdocs serve"
 

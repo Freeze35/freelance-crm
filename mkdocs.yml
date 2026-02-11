@@ -1,0 +1,16 @@
+site_name: Freelance CRM Docs
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.] # Корень проекта, где лежит папка bot
+          options:
+            docstring_style: google
+
+nav:
+  - Home: index.md
+  - Telegram Bot: telegram_bot.md

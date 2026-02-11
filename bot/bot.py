@@ -43,6 +43,14 @@ dp: Dispatcher = Dispatcher(storage=MemoryStorage())
 
 
 class RegisterForm(StatesGroup):
+    """
+        Finite State Machine (FSM) states for the client registration process.
+
+        Attributes:
+            organization: State for capturing the legal entity or person name.
+            inn: State for capturing the tax identification number (INN/OGRN).
+            email: State for capturing the contact email for invoice copies.
+    """
     organization: State = State()
     inn: State = State()
     email: State = State()
@@ -50,11 +58,23 @@ class RegisterForm(StatesGroup):
 
 @dp.message(F.text == "📝 Регистрация")
 async def btn_registration(message: types.Message, state: FSMContext) -> None:
+    """
+        Entry point for registration triggered by the reply keyboard button.
+
+        Args:
+            message: The incoming message from the user.
+            state: The FSM context for managing user registration flow.
+    """
     await cmd_registration(message, state)
 
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message) -> None:
+    """
+        Handles the /start command.
+
+        Provides a welcome message and initializes the main interaction menu.
+    """
     builder: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
     builder.button(text="📝 Регистрация")
     builder.adjust(1)
@@ -73,6 +93,9 @@ async def cmd_start(message: types.Message) -> None:
 
 @dp.message(Command("registration", "reg"))
 async def cmd_registration(message: types.Message, state: FSMContext) -> None:
+    """
+        Processes the organization name and transitions to the INN input state.
+    """
     await message.answer(
         "Отлично, начинаем регистрацию! 📝\n\n"
         "Напиши название организации (или ФИО, если ИП):"
@@ -82,6 +105,9 @@ async def cmd_registration(message: types.Message, state: FSMContext) -> None:
 
 @dp.message(RegisterForm.organization)
 async def process_organization(message: types.Message, state: FSMContext) -> None:
+    """
+        Processes the organization name and transitions to the INN input state.
+    """
     raw_text: Optional[str] = message.text
     if not raw_text:
         return
@@ -98,6 +124,13 @@ async def process_organization(message: types.Message, state: FSMContext) -> Non
 
 @dp.message(RegisterForm.inn)
 async def process_inn(message: types.Message, state: FSMContext) -> None:
+    """
+            Validates the INN/OGRN format and transitions to the email input state.
+
+            Validation:
+                - Must be numeric.
+                - Must be 10 or 12 characters long.
+    """
     raw_inn: Optional[str] = message.text
     if not raw_inn:
         return
@@ -123,6 +156,12 @@ async def process_inn(message: types.Message, state: FSMContext) -> None:
 
 @dp.message(RegisterForm.email)
 async def process_email(message: types.Message, state: FSMContext) -> None:
+    """
+        Finalizes registration, validates email (or skip), and saves data to Django DB.
+
+        Note:
+            Uses `sync_to_async` for non-blocking database operations via Django ORM.
+    """
     raw_input: Optional[str] = message.text
     if not raw_input:
         return
@@ -185,7 +224,7 @@ async def process_email(message: types.Message, state: FSMContext) -> None:
 
 
 async def set_commands(bot: Bot) -> None:
-    """Set up the bot's command menu for the UI"""
+    """Configures the bot's command menu in the Telegram interface."""
     commands: List[BotCommand] = [
         BotCommand(command="start", description="Запустить бота и получить справку"),
         BotCommand(command="registration", description="Зарегистрироваться или обновить данные"),
@@ -194,7 +233,11 @@ async def set_commands(bot: Bot) -> None:
 
 
 async def main() -> None:
-    """Main entry point for the bot application"""
+    """
+    Main entry point for the bot service.
+
+    Initializes commands and starts long-polling.
+    """
     await set_commands(bot)
     await dp.start_polling(bot)
 
