@@ -29,3 +29,6 @@ nav:
   - CRM Module:
       - Validation Tests: crm/testing_crm.md
       - CRM: crm/crm.md
+  - Invoices Module:
+      - Validation Tests: invoices/testing_invoices.md
+      - Invoices: invoices/invoices.md

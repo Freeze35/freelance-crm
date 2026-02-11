@@ -37,13 +37,6 @@ Automated notifications are scheduled via **Celery Beat**.
       show_root_heading: false
       show_source: true
 
-## Forms
-::: crm.forms
-    options:
-          show_root_heading: true
-          show_source: true
-          members_order: source
-
 ## Views
 ::: crm.views
     options:

@@ -4,6 +4,21 @@ from django.utils import timezone
 from typing import List, Tuple
 
 class Invoice(models.Model):
+    """
+        Represents a financial document issued to a client for project work.
+
+        The Invoice model tracks the billing amount, payment deadlines, and
+        the current lifecycle status of a payment request.
+
+        Attributes:
+            project: Reference to the associated Project.
+            number: Unique identifier for the invoice (e.g., INV-2026-001).
+            amount: The total monetary value of the invoice.
+            issue_date: The date when the invoice was generated.
+            due_date: The deadline for the payment.
+            status: The current state of the invoice (draft, sent, paid, etc.).
+        """
+
     STATUS_CHOICES: List[Tuple[str, str]] = [
         ('draft', 'Черновик'),
         ('sent', 'Отправлен'),
