@@ -1,6 +1,6 @@
 # Client Form Testing
 
-This section documents the settings,view,forms,urls and models inside clients
+This section documents the settings,view,forms,urls and models inside invoices
 
 ## Invoice Model
 The `Invoice` model is linked to a `Project`. It serves as the source of truth for billing and is used to generate PDF documents.

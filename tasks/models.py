@@ -5,6 +5,20 @@ from typing import List, Tuple, Optional
 from datetime import date
 
 class Task(models.Model):
+    """
+        Represents an atomic unit of work within a Project.
+
+        Tasks track specific actions, their current state, and deadlines.
+        They are the primary source for the 'Overdue' monitoring system.
+
+        Attributes:
+            project: ForeignKey linking to the parent Project.
+            title: Short summary of the task.
+            description: Detailed instructions or notes.
+            status: Current state.
+            deadline: The date by which the task should be finished.
+            created_at: Automatic timestamp of task creation.
+    """
     STATUS_CHOICES: List[Tuple[str, str]] = [
         ('todo', 'К выполнению'),
         ('in_progress', 'В работе'),
@@ -25,12 +39,22 @@ class Task(models.Model):
         ordering = ['deadline', '-created_at']
 
     def __str__(self) -> str:
-        """Return the task title and its associated project name"""
+        """Return the task title and its associated project name."""
         return f"{self.title} ({self.project})"
 
     @property
     def is_overdue(self) -> bool:
-        """Check if the task is past its deadline and not yet completed"""
+        """
+        Determines if the task is overdue.
+
+        A task is considered overdue if:
+        1. It has a deadline set.
+        2. The deadline is earlier than the current date.
+        3. The status is not 'done'.
+
+        Returns:
+            bool: True if the task is overdue, False otherwise.
+        """
         current_date: date = timezone.now().date()
         return bool(
             self.deadline and

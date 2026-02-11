@@ -1,6 +1,6 @@
 # Client Form Testing
 
-This section documents the settings,view,forms,urls and models inside clients
+This section documents the settings,view,forms,urls and models inside projects
 
 # Projects: Database Models
 

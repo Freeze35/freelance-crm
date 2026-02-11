@@ -4,6 +4,16 @@ from typing import Dict, Any
 
 # forms.py
 class TaskForm(forms.ModelForm):
+    """
+        Form for creating and managing individual Tasks.
+
+        This form is designed for a seamless UI experience, using Tailwind CSS
+        classes for styling and HTML5 date widgets for deadline management.
+
+        Attributes:
+            Meta.fields: Includes title, description, status, and deadline.
+            common_classes: Shared Tailwind CSS utility classes applied to all inputs.
+    """
     class Meta:
         model = Task
         fields: list[str] = ['title', 'description', 'status', 'deadline']
