@@ -7,10 +7,22 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: [.] # Корень проекта, где лежит папка bot
+          paths: [.]
+          setup_commands:
+            - import os
+            - import sys
+            - import django
+            - sys.path.append(os.getcwd())
+            - os.environ.setdefault("DJANGO_SETTINGS_MODULE", "crm.settings")
+            - django.setup()
           options:
             docstring_style: google
+            show_root_heading: true
+            show_source: true
 
 nav:
   - Home: index.md
   - Telegram Bot: telegram_bot.md
+  - Clients Module:
+      - Validation Tests: clients/testing_clients.md
+      - Clients: clients/clients.md

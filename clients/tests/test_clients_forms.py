@@ -6,9 +6,19 @@ from clients.models import Client
 
 @pytest.mark.django_db
 class TestClientForm:
+    """
+        Test suite for validating the ClientForm logic.
+
+        Covers phone number normalization, length validation,
+        uniqueness checks, and optional fields.
+    """
 
     def test_form_valid_data(self) -> None:
-        """Verify the form accepts valid data and formats the phone number"""
+        """
+        Verify the form accepts valid data and correctly normalizes the phone number.
+
+        Input starting with '8' should be converted to '7'.
+        """
 
         data: Dict[str, str] = {
             'name': 'Иван Иванов',
@@ -23,13 +33,17 @@ class TestClientForm:
         assert form.cleaned_data.get('phone') == '79991112233'
 
     def test_phone_conversion_from_8(self) -> None:
-        """Verify that a leading '8' is replaced with '7' during cleaning"""
+        """
+        Verify that a leading '8' is replaced with '7' during the cleaning process.
+        """
         form: ClientForm = ClientForm(data={'name': 'Test', 'phone': '89001234567'})
         form.is_valid()
         assert form.cleaned_data.get('phone') == '79001234567'
 
     def test_phone_too_short(self) -> None:
-        """Verify validation error when the phone number is insufficient in length"""
+        """
+        Verify validation error when the phone number is insufficient in length
+        """
         form: ClientForm = ClientForm(data={'name': 'Test', 'phone': '7900123'})
 
         assert not form.is_valid()
@@ -39,7 +53,9 @@ class TestClientForm:
         assert "Номер должен содержать ровно 11 цифр (включая 7)" in phone_errors
 
     def test_duplicate_phone_validation(self) -> None:
-        """Verify uniqueness constraint on the phone number field within the form"""
+        """
+        Verify uniqueness constraint on the phone number field within the form
+        """
 
         Client.objects.create(name="Existing", phone="79990000000")
 
@@ -49,7 +65,9 @@ class TestClientForm:
         assert "Этот номер телефона уже используется" in form.errors['phone']
 
     def test_empty_phone_is_allowed(self) -> None:
-        """Verify that the phone field is optional in the form"""
+        """
+        Verify that the phone field is optional in the form
+        """
         form: ClientForm = ClientForm(data={'name': 'Only Name', 'phone': ''})
         assert form.is_valid()
         assert form.cleaned_data.get('phone') == ''
